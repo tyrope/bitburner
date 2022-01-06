@@ -1,0 +1,5 @@
+srvs = getPurchasedServers();
+for (var i = 0; i < srvs.length; i++) {
+    kill("drain.script", srvs[i]);
+    rm("drain.script", srvs[i]);
+}

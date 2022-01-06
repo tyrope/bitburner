@@ -1,0 +1,43 @@
+function myCash() {
+    return getServerMoneyAvailable("home");
+}
+disableLog("getServerMoneyAvailable");
+disableLog("sleep");
+
+var maxNodes = 30; // Change this.
+var maxLevel = 200; // Change this.
+var maxRam = 64; // Change this.
+var maxCore = 16; // Change this.
+
+while (true) {
+    for (var i = 0; i < hacknet.numNodes(); i++) {
+        print("Shopping for node " + i);
+        while (
+            hacknet.getNodeStats(i).level < maxLevel &&
+            hacknet.getLevelUpgradeCost(i, 1) < myCash()
+        ) {
+            hacknet.upgradeLevel(i, 1);
+            print("Bought levels for " + i);
+        }
+        while (
+            hacknet.getNodeStats(i).ram < maxRam &&
+            hacknet.getRamUpgradeCost(i, 1) < myCash()
+        ) {
+            hacknet.upgradeRam(i, 1);
+            print("Bought ram for " + i);
+        }
+        while (
+            hacknet.getNodeStats(i).cores < maxCore &&
+            hacknet.getCoreUpgradeCost(i, 1) < myCash()
+        ) {
+            hacknet.upgradeCore(i, 1);
+            print("Bought core for " + i);
+        }
+    }
+    if (
+        hacknet.numNodes() < maxNodes &&
+        hacknet.getPurchaseNodeCost() < myCash()
+    ) {
+        print("Bought node " + hacknet.purchaseNode());
+    }
+}

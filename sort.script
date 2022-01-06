@@ -1,0 +1,41 @@
+var scanned = []; var frontier = ["home"];
+
+disableLog('scan');
+disableLog('getHackingLevel');
+disableLog('getServerRequiredHackingLevel');
+
+function checkIfTodo(server){
+    lvl = getServerRequiredHackingLevel(server);
+    if (lvl < getHackingLevel()) {
+        isHacking = false;
+        processes = ps(server);
+        for (var p = 0; p < processes.length; p++) {
+            if (processes[p].filename == "basicHack.script") {
+                isHacking = true;
+                break;
+            }
+        }
+        if (isHacking == false && lvl > 1) {
+            print(server + " requires level " + lvl);
+        }
+    }
+}
+
+// Find all servers.
+while (frontier.length > 0) {
+    // Get the next server.
+    todo = frontier.shift()
+    // check if we need to hack this one.
+    checkIfTodo(todo);
+    // Tell the script we've scanned it.
+    scanned.push(todo);
+    // Go through it's neighbors.
+    neighbors = scan(todo);
+    for (var i = 0; i < neighbors.length; i++) {
+        // Check if we've scanned it.
+        if (scanned.indexOf(neighbors[i]) == -1) {
+            // Add it to the list if not.
+            frontier.push(neighbors[i]);
+        }
+    }
+}

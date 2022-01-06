@@ -1,0 +1,24 @@
+var servers = [
+    "n00dles",
+    "foodnstuff",
+    "sigma-cosmetics",
+    "joesguns",
+    "zer0",
+    "nectar-net",
+    "neo-net",
+    "hong-fang-tea",
+    "harakiri-sushi",
+    "max-hardware",
+    "iron-gym",
+    "CSEC",
+    "phantasy",
+    "silver-helix"];
+
+for (var i = 0; i < servers.length; i++) {
+    var err = run("gainControl.script", 1, servers[i]);
+    if (err == 0) {
+        tprint("Failed to gain control of " + servers[i]);
+    } else {
+        tprint("Gained control of " + servers[i]);
+    }
+}

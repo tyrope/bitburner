@@ -1,0 +1,1 @@
+tprint(getPurchasedServerCost(args[0]));

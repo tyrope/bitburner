@@ -1,0 +1,85 @@
+/// Scan (c) Tyrope 2022
+/// This script goes through *all* servers in the game and runs serverGrower.script on them.
+/// Usage: run scan.script target
+/// parameter: target - String - exact name (case sensitive, maybe) to grow.
+/// Configuration: Line 32, set the number of ports to the amount of portbreaking tools you have.
+/// Configuration: Line 39-43, (un)comment the portbreaking tools you have acquired.
+
+
+var scanned = []; // List of all the scanned servers.
+var frontier = ["home"]; // List of the servers we're going to scan.
+var todo; // Current server we're scanning.
+var neighbors; // The servers adjacent to todo
+
+disableLog('exec');
+disableLog('scan');
+disableLog('scp');
+disableLog('nuke');
+disableLog('brutessh');
+disableLog('ftpcrack');
+disableLog('relaysmtp');
+disableLog('httpworm');
+disableLog('sqlinject');
+disableLog('getServerNumPortsRequired');
+disableLog('getServerMaxRam');
+disableLog('getServerUsedRam');
+
+function control(server) {
+    // Get root if needed.
+    if (hasRootAccess(server) == false) {
+
+        // If there's more ports required than we have tools, abandon ship.
+        if (getServerNumPortsRequired(server) > 5) {
+            print(server + " requires too many ports.");
+            return;
+        }
+        tprint("Nuking " + server);
+
+        // Run tools
+        brutessh(server);
+        ftpcrack(server);
+        relaysmtp(server);
+        httpworm(server);
+        sqlinject(server);
+        nuke(server);
+
+        // Check if it worked, if it didn't... abandon ship.
+        if (hasRootAccess(server) == false) {
+            tprint("FAILED getting root: " + server);
+            return;
+        }
+    }
+
+    // Kill the serverGrower script if it's running.
+    if (scriptRunning("serverGrower.script", server)) {
+        scriptKill("serverGrower.script", server);
+    }
+
+    scp("serverGrower.script", "home", server);
+    // Calculate how many threads of the server grower we can run.
+    var threads = Math.floor((getServerMaxRam(server) - getServerUsedRam(server)) / getScriptRam("serverGrower.script"))
+    // run the server grower, if we can.
+    if (threads > 0) {
+        exec("serverGrower.script", server, threads, args[0]);
+    }
+}
+
+// Main loop.
+while (frontier.length > 0) {
+    // Get the next server.
+    todo = frontier.shift()
+    // Control it.
+    control(todo);
+    // Tell the script we've scanned it.
+    scanned.push(todo);
+    // Go through it's neighbors.
+    neighbors = scan(todo);
+    for (var i = 0; i < neighbors.length; i++) {
+        // Check if we've scanned it.
+        if (scanned.indexOf(neighbors[i]) == -1) {
+            // Add it to the list if not.
+            frontier.push(neighbors[i]);
+        }
+    }
+}
+tprint("Scan complete.");
