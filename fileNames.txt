@@ -1,3 +1,4 @@
+autoUpdate.js
 basicHack.js
 findHackable.js
 hacknetIdler.js
