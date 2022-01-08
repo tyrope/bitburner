@@ -8,7 +8,7 @@ let maxCore = 16; //Max 16
 let sleepPurchase = 1; // Amount of time to sleep after we've bought something
 let sleepCycle = 10000; // Amount of time to sleep after we've finished a full cycle.
 
-function myCash() {
+function myCash(ns) {
     return ns.getServerMoneyAvailable("home");
 }
 
@@ -21,7 +21,7 @@ export async function main(ns) {
             ns.print("Shopping for node " + i);
             while (
                 ns.hacknet.getNodeStats(i).level < maxLevel &&
-                ns.hacknet.getLevelUpgradeCost(i, 1) < myCash()
+                ns.hacknet.getLevelUpgradeCost(i, 1) < myCash(ns)
             ) {
                 ns.hacknet.upgradeLevel(i, 1);
                 ns.print("Bought levels for " + i);
@@ -29,7 +29,7 @@ export async function main(ns) {
             }
             while (
                 ns.hacknet.getNodeStats(i).ram < maxRam &&
-                ns.hacknet.getRamUpgradeCost(i, 1) < myCash()
+                ns.hacknet.getRamUpgradeCost(i, 1) < myCash(ns)
             ) {
                 ns.hacknet.upgradeRam(i, 1);
                 ns.print("Bought ram for " + i);
@@ -37,7 +37,7 @@ export async function main(ns) {
             }
             while (
                 ns.hacknet.getNodeStats(i).cores < maxCore &&
-                ns.hacknet.getCoreUpgradeCost(i, 1) < myCash()
+                ns.hacknet.getCoreUpgradeCost(i, 1) < myCash(ns)
             ) {
                 ns.hacknet.upgradeCore(i, 1);
                 ns.print("Bought core for " + i);
@@ -46,7 +46,7 @@ export async function main(ns) {
         }
         while (
             ns.hacknet.numNodes() < maxNodes &&
-            ns.hacknet.getPurchaseNodeCost() < myCash()
+            ns.hacknet.getPurchaseNodeCost() < myCash(ns)
         ) {
             ns.print("Bought node " + ns.hacknet.purchaseNode());
             await ns.sleep(sleepPurchase);
