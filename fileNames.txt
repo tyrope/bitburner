@@ -1,0 +1,7 @@
+basicHack.js
+findHackable.js
+hacknetIdler.js
+scan.js
+serverGrower.js
+srvMngr.js
+targetHack.js
