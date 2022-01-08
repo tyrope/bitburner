@@ -14,6 +14,7 @@ async function getFile(ns, fileName) {
             return true;
         } else {
             // Don't check every millisecond.
+            ns.print("Waiting on " + fileName);
             await ns.sleep(1000);
         }
     }
@@ -24,6 +25,8 @@ async function getFile(ns, fileName) {
 }
 
 export async function main(ns) {
+    ns.disableLog("sleep");
+
     // Get the list of files to auto-update.
     let timeStart = ns.getTimeSinceLastAug();
     let downloaded = await ns.wget(repo + "fileNames.txt", "fileNames.txt");
@@ -31,6 +34,7 @@ export async function main(ns) {
         if (downloaded == true) {
             break;
         } else {
+            ns.print("Waiting on filenames.txt");
             await ns.sleep(1000);
         }
     }
@@ -49,5 +53,9 @@ export async function main(ns) {
         }
         await getFile(ns, file);
     }
+
+    // Let's play nice and clean up the text file.
+    ns.rm("fileNames.txt");
+    ns.toast("Update complete.");
 }
 
