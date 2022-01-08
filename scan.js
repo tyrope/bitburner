@@ -60,7 +60,7 @@ function getRoot(ns, server) {
                 ns.sqlinject(server);
                 break;
             case 'smtp':
-                ns.smtprelay(server);
+                ns.relaysmtp(server);
                 break;
         }
     }
