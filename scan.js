@@ -4,7 +4,9 @@ Usage: run scan.js target
 parameter: target: String - exact name (case sensitive, maybe) to grow.
 **/
 
-function getTools() {
+let scriptName = "serverGrower.script";
+
+function getTools(ns) {
     let ret = [];
     if(ns.fileExists('BruteSSH.exe', 'home')){
         ret.push('ssh');
@@ -24,7 +26,7 @@ function getTools() {
     return ret;
 }
 
-function getRoot(server) {
+function getRoot(ns, server) {
     if(ns.hasRootAccess(server) == true) {
         // We already have root you dumbdumb.
         return true;
@@ -35,7 +37,7 @@ function getRoot(server) {
         return false;
     }
 
-    let tools = getTools();
+    let tools = getTools(ns);
     let ports = ns.getServerNumPortsRequired(server)
     if(ports > tools.length){
         // Can't open enough ports.
@@ -47,14 +49,19 @@ function getRoot(server) {
         switch(tools[i]){
             case 'ssh':
                 ns.brutessh(server);
+                break;
             case 'ftp':
                 ns.ftpcrack(server);
+                break;
             case 'http':
                 ns.httpworm(server);
+                break;
             case 'sql':
                 ns.sqlinject(server);
+                break;
             case 'smtp':
                 ns.smtprelay(server);
+                break;
         }
     }
 
@@ -68,49 +75,55 @@ function getRoot(server) {
     return true;
 }
 
-function control(server) {
-    if(getRoot(server) == false){
+async function control(ns, server) {
+    if(getRoot(ns, server) == false){
         // No root, no scripts.
         return;
     }
 
-    // Kill the serverGrower script if it's running.
-    if (scriptRunning("serverGrower.script", server)) {
-        scriptKill("serverGrower.script", server);
+    // Kill the script if it's running.
+    if (ns.scriptRunning(scriptName, server)) {
+        ns.scriptKill(scriptName, server);
     }
 
-    scp("serverGrower.script", "home", server);
+    await ns.scp(scriptName, "home", server);
     // Calculate how many threads of the server grower we can run.
-    var threads = Math.floor((getServerMaxRam(server) - getServerUsedRam(server)) / getScriptRam("serverGrower.script"))
+    let threads = Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / ns.getScriptRam(scriptName))
     // run the server grower, if we can.
     if (threads > 0) {
-        exec("serverGrower.script", server, threads, args[0]);
+        ns.exec(scriptName, server, threads, ns.args[0]);
     }
 }
 
+export async function main(ns){
+    if(ns.args[0] == undefined){
+        ns.tprint("No target specified.");
+        ns.exit();
+    }
 
+    let scanned = []; // List of all the scanned servers.
+    let frontier = ["home"]; // List of the servers we're going to scan.
+    let todo; // Current server we're scanning.
+    let neighbors; // The servers adjacent to todo
 
-var scanned = []; // List of all the scanned servers.
-var frontier = ["home"]; // List of the servers we're going to scan.
-var todo; // Current server we're scanning.
-var neighbors; // The servers adjacent to todo
-
-// Main loop.
-while (frontier.length > 0) {
-    // Get the next server.
-    todo = frontier.shift()
-    // Control it.
-    control(todo);
-    // Tell the script we've scanned it.
-    scanned.push(todo);
-    // Go through it's neighbors.
-    neighbors = scan(todo);
-    for (var i = 0; i < neighbors.length; i++) {
-        // Check if we've scanned it.
-        if (scanned.indexOf(neighbors[i]) == -1) {
-            // Add it to the list if not.
-            frontier.push(neighbors[i]);
+    // Main loop.
+    while (frontier.length > 0) {
+        // Get the next server.
+        todo = frontier.shift()
+        // Control it.
+        await control(ns, todo);
+        // Tell the script we've scanned it.
+        scanned.push(todo);
+        // Go through it's neighbors.
+        neighbors = ns.scan(todo);
+        for (let i = 0; i < neighbors.length; i++) {
+            // Check if we've scanned it.
+            if (scanned.indexOf(neighbors[i]) == -1) {
+                // Add it to the list if not.
+                frontier.push(neighbors[i]);
+            }
         }
     }
+    ns.tprint("Scan complete.");
 }
-tprint("Scan complete.");
+
