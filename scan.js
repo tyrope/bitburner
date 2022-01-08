@@ -4,7 +4,7 @@ Usage: run scan.js target
 parameter: target: String - exact name (case sensitive, maybe) to grow.
 **/
 
-let scriptName = "serverGrower.script";
+let scriptName = "serverGrower.js";
 
 function getTools(ns) {
     let ret = [];
