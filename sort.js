@@ -14,7 +14,7 @@ function checkIfTodo(ns, server) {
             }
         }
         if (isHacking == false && lvl > 1) {
-            print(server + " requires level " + lvl);
+            ns.print(server + " requires level " + lvl);
         }
     }
 }
