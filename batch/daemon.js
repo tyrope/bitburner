@@ -59,12 +59,17 @@ export async function main(ns) {
     runTimes.push(ns.getWeakenTime(tgt));
 
     // Calculate RAM.
-    let ramUsed = [
-        ns.getScriptRam('/batch/hack.js', source) * threads[0],
-        ns.getScriptRam('/batch/weaken.js', source) * threads[1],
-        ns.getScriptRam('/batch/grow.js', source) * threads[2],
-        ns.getScriptRam('/batch/weaken.js', source) * threads[3]
-    ];
+    let ramUsed =
+        ns.getScriptRam('/batch/hack.js', source) * threads[0] +
+        ns.getScriptRam('/batch/weaken.js', source) * threads[1] +
+        ns.getScriptRam('/batch/grow.js', source) * threads[2] +
+        ns.getScriptRam('/batch/weaken.js', source) * threads[3];
+
+    let maxBatches = Math.floor((ns.getServerMaxRam(source) - ns.getServerUsedRam(source)) / ramUsed);
+    if (batches > maxBatches) {
+        ns.tprint(`INFO: ${source} can't run ${batches} batches due to RAM limitations. Lowering to ${maxBatches}`);
+        batches = maxBatches;
+    }
 
     // Calculate delays.
     let startTimes = [0, 0, 0, 0];
