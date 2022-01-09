@@ -17,9 +17,11 @@ function deleteServers(ns) {
 }
 
 async function purchase(ns) {
-    while (getPurchasedServers().length < getPurchasedServerLimit()) {
+    while (ns.getPurchasedServers().length < ns.getPurchasedServerLimit()) {
         if (price(ns) < ns.getServerMoneyAvailable("home")) {
-            ns.purchaseServer("srv", args[0]);
+            ns.purchaseServer("srv", ns.args[0]);
+        } else {
+            await ns.sleep(1000);
         }
     }
 }
