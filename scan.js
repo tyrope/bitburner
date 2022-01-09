@@ -32,11 +32,6 @@ function getRoot(ns, server) {
         return true;
     }
 
-    if(ns.getServerRequiredHackingLevel(server) > ns.getHackingLevel()) {
-        // You are not ready.
-        return false;
-    }
-
     let tools = getTools(ns);
     let ports = ns.getServerNumPortsRequired(server)
     if(ports > tools.length){
