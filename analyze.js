@@ -25,7 +25,7 @@ export async function main(ns) {
     runTimes.push(ns.getHackTime(tgt));
     ns.tprint(
         "Hack(" + tgt + ", " + threads[0] + "): $" + ns.nFormat(moneyPercent, "0,0a") + 
-        " in " + ns.tFormat(runTimes[0], true) + "s, +" + secIncrease + "sec."
+        " in " + ns.tFormat(runTimes[0], true) + ", +" + secIncrease + "sec."
     );
 
     // Calculate the weaken we need to counter hack.
@@ -36,13 +36,13 @@ export async function main(ns) {
         secEffect = ns.weakenAnalyze(threads[1]);
     }
     runTimes.push(ns.getWeakenTime(tgt));
-    ns.tprint("Weaken(" + tgt + ", " + threads[1] + "): -" + secEffect + "sec in " + ns.tFormat(runTimes[1], true) + "s.");
+    ns.tprint("Weaken(" + tgt + ", " + threads[1] + "): -" + secEffect + "sec in " + ns.tFormat(runTimes[1], true) + ".");
 
     // Calculate the grow we need.
     threads.push(Math.ceil(ns.growthAnalyze(tgt, moneyPercent)));
     secIncrease = ns.growthAnalyzeSecurity(threads[2]);
     runTimes.push(ns.getGrowTime(tgt));
-    ns.tprint("Grow(" + tgt + ", " + threads[2] + "): +" + secIncrease + "sec in " + ns.tFormat(runTimes[2], true) + "s.");
+    ns.tprint("Grow(" + tgt + ", " + threads[2] + "): +" + secIncrease + "sec in " + ns.tFormat(runTimes[2], true) + ".");
 
     // Calculate the weaken we need to counter grow.
     threads.push(0);
@@ -52,7 +52,5 @@ export async function main(ns) {
         secEffect = ns.weakenAnalyze(threads[3]);
     }
     runTimes.push(ns.getWeakenTime(tgt));
-    ns.tprint("Weaken(" + tgt + ", " + threads[3] + "): -" + secEffect + "sec in " + ns.tFormat(runTimes[3], true) + "s.");
-
-    
+    ns.tprint("Weaken(" + tgt + ", " + threads[3] + "): -" + secEffect + "sec in " + ns.tFormat(runTimes[3], true) + ".");
 }
