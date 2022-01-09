@@ -3,6 +3,7 @@
 function checkIfTodo(ns, server) {
     // TODO change below to the effective hacking level required.
     let lvl = ns.getServerRequiredHackingLevel(server);
+    let money = ns.getServerMaxMoney(server);
 
     if (lvl < ns.getHackingLevel()) {
         let isHacking = false;
@@ -13,7 +14,7 @@ function checkIfTodo(ns, server) {
                 break;
             }
         }
-        if (isHacking == false && lvl > 1) {
+        if (isHacking == false && money > 0) {
             ns.print(server + " requires level " + lvl);
         }
     }
@@ -28,6 +29,8 @@ export async function main(ns) {
     ns.disableLog('scan');
     ns.disableLog('getHackingLevel');
     ns.disableLog('getServerRequiredHackingLevel');
+    ns.disableLog('getServerMaxMoney');
+    
     ns.clearLog();
 
     // Find all servers.
