@@ -9,6 +9,6 @@ export async function main(ns) {
     while(profit == 0){
         await sleep(100);
     }
-    ns.tprint(`Hacked \$${ns.nFormat(profit, "0.0a")} from ${ns.args[0]}`);
+    ns.tprint(`SUCCESS: Hacked \$${ns.nFormat(profit, "0.0a")} from ${ns.args[0]}`);
 }
 
