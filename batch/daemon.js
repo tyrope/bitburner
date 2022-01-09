@@ -75,7 +75,7 @@ export async function main(ns) {
     startTimes[0] = runTimes[1] - endDelay - runTimes[0];
     endTimes[0] = startTimes[0] + runTimes[0];
 
-    let batchStart = ns.getTimeSinceLastAug() + 5000;
+    let batchStart = ns.getTimeSinceLastAug() + endDelay;
     ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0]);
     ns.exec('/batch/weaken.js', source, threads[1], tgt, batchStart + startTimes[1]);
     ns.exec('/batch/grow.js', source, threads[2], tgt, batchStart + startTimes[2]);
