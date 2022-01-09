@@ -1,3 +1,7 @@
+batch/daemon.js
+batch/grow.js
+batch/hack.js
+batch/weaken.js
 analyze.js
 autoUpdate.js
 basicHack.js
