@@ -10,13 +10,21 @@ export async function main(ns) {
     }
     let tgt = ns.args[0];
     let source = ns.args[2] ? ns.args[2] : ns.getHostname();
+    let endDelay = 100;
 
-    // TODO: Create batch-preparation loop.
-    if (ns.getServerMaxMoney(tgt) != ns.getServerMoneyAvailable(tgt)) {
-        ns.tprint(`WARNING: ${tgt} not at max money, calculations might be wrong.`);
-    }
-    if (ns.getServerSecurityLevel(tgt) != ns.getServerMinSecurityLevel(tgt)) {
-        ns.tprint(`WARNING: ${tgt} not at min security, calculations might be wrong.`);
+    if (
+        ns.getServerMaxMoney(tgt) != ns.getServerMoneyAvailable(tgt) ||
+        ns.getServerSecurityLevel(tgt) != ns.getServerMinSecurityLevel(tgt)
+    ) {
+        ns.tprint(`WARN: ${tgt} Not properly prepared, running a serverGrower instead.`);
+        await ns.scp("serverGrower.js", "home", server);
+        // Calculate how many threads of the server grower we can run.
+        let threads = Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / ns.getScriptRam("serverGrower.js"))
+        // run the server grower, if we can.
+        if (threads > 0) {
+            ns.exec("serverGrower.js", server, threads, ns.args[0]);
+        }
+        ns.exit();
     }
 
     // Calculate the hack.
@@ -60,9 +68,7 @@ export async function main(ns) {
     // Calculate delays.
     let startTimes = [0, 0, 0, 0];
     let endTimes = runTimes;
-    let endDelay = 1000;
 
-    // TODO Don't hardcode this.
     // Delay weaken 2 by 2x endDelay.
     startTimes[3] = endDelay * 2;
     endTimes[3] = startTimes[3] + runTimes[3];
