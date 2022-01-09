@@ -5,11 +5,12 @@ export async function main(ns) {
 
     // Set the target
     if (ns.args[1] == undefined) {
-        ns.tprint("Usage: target: string, moneyPercent: number, source?: string");
+        ns.tprint("Usage: target: string, moneyPercent: number, batches?: number, source?: string");
         ns.exit();
     }
     let tgt = ns.args[0];
-    let source = ns.args[2] ? ns.args[2] : ns.getHostname();
+    let batches = ns.args[2] ? ns.args[2] : 1;
+    let source = ns.args[3] ? ns.args[3] : ns.getHostname();
     let endDelay = 100;
 
     if (
@@ -82,8 +83,12 @@ export async function main(ns) {
     endTimes[0] = startTimes[0] + runTimes[0];
 
     let batchStart = ns.getTimeSinceLastAug() + endDelay;
-    ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0]);
-    ns.exec('/batch/weaken.js', source, threads[1], tgt, batchStart + startTimes[1]);
-    ns.exec('/batch/grow.js', source, threads[2], tgt, batchStart + startTimes[2]);
-    ns.exec('/batch/weaken.js', source, threads[3], tgt, batchStart + startTimes[3]);
+    for (let i = 0; i < batches; i++) {
+        ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0]);
+        ns.exec('/batch/weaken.js', source, threads[1], tgt, batchStart + startTimes[1]);
+        ns.exec('/batch/grow.js', source, threads[2], tgt, batchStart + startTimes[2]);
+        ns.exec('/batch/weaken.js', source, threads[3], tgt, batchStart + startTimes[3]);
+        batchStart += endDelay * 4;
+    }
 }
+
