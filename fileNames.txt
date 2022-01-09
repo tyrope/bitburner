@@ -1,3 +1,4 @@
+analyze.js
 autoUpdate.js
 basicHack.js
 findHackable.js
