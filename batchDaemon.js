@@ -44,6 +44,22 @@ function calcHack(ns, tgt, moneyPct) {
 }
 
 /**
+ * Calculate the amount of grow threads needed for a batch attack.
+ * @param {NS} ns
+ * @param {String} tgt The hostname of the target server.
+ * @param {Number} moneyPct The amount of money we've stolen.
+ * @return {Number[]}  The amount of threads, grow duration.
+ */
+function calcGrow(ns, tgt, moneyPct) {
+    let max = ns.getServerMaxMoney(tgt);
+    let regrow = max / (max - moneyPct);
+    return [
+        Math.ceil(ns.growthAnalyze(tgt, regrow)),
+        ns.getGrowTime(tgt)
+    ];
+}
+
+/**
  * Calculate the amount of weaken threads needed for a batch attack.
  * @param {NS} ns
  * @param {String} tgt The hostname of the target server.
@@ -130,7 +146,7 @@ export async function main(ns) {
     let simulate = ns.args[2] ? ns.args[2] : false;
     let source = ns.args[3] ? ns.args[3] : ns.getHostname();
     let batches = ns.args[4] ? ns.args[4] : Infinity;
-    let delay = ns.args[5] ? ns.args[5] : 100;
+    let delay = ns.args[5] ? ns.args[5] : 200;
 
     // Ensure the server is prepped.
     await checkServerPrep(ns, tgt, source);
@@ -145,8 +161,8 @@ export async function main(ns) {
     threads.push(calc[0]); runTimes.push(calc[1]);
 
     // Calculate the grow we need.
-    threads.push(Math.ceil(ns.growthAnalyze(tgt, moneyPct)));
-    runTimes.push(ns.getGrowTime(tgt));
+    calc = calcGrow(ns, tgt, moneyPct);
+    threads.push(calc[0]); runTimes.push(calc[1]);
 
     // Calculate the weaken we need to counter grow.
     calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]));
@@ -182,7 +198,7 @@ export async function main(ns) {
             `Grow(${threads[2]}) uses ${ns.nFormat(ram[2] * 10e8, "0.0b")} RAM.\n` +
             `Weaken(${threads[3]}) uses ${ns.nFormat(ram[3] * 10e8, "0.0b")} RAM.\n`);
     } else {
-        ns.toast(`${source} running ${batches} batches against ${tgt}.`,'INFO');
+        ns.toast(`${source} running ${batches} batches against ${tgt}.`, 'info');
         let batchStart = ns.getTimeSinceLastAug() + delay;
         for (let i = 0; i < batches; i++) {
             ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0]);
