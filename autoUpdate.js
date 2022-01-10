@@ -10,14 +10,14 @@ async function getFile(ns, fileName) {
 
     let downloaded;
 
-    if (ns.scriptRunning(fileName, ns.getHostname())) {
-        ns.kill(fileName);
+    if (ns.scriptRunning(fileName, 'home')) {
+        ns.kill(fileName, 'home');
     }
 
     try {
         downloaded = await ns.wget(repo + fileName, fileName);
     } catch (e) {
-        ns.toast("Failed to update " + fileName, "error");
+        ns.toast("Failed to update " + fileName, "error", null);
         return false;
     }
 
