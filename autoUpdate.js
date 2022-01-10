@@ -6,7 +6,7 @@ async function getFile(ns, fileName) {
     let timeStart = ns.getTimeSinceLastAug();
 
     // Subfoldered files need their slashy prefix because "reasons"
-    if (fileName.contains('/')) fileName = '/' + fileName;
+    if (fileName.includes('/')) fileName = '/' + fileName;
 
     let downloaded;
 
