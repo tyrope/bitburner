@@ -182,7 +182,7 @@ export async function main(ns) {
             `Grow(${threads[2]}) uses ${ns.nFormat(ram[2] * 10e8, "0.0b")} RAM.\n` +
             `Weaken(${threads[3]}) uses ${ns.nFormat(ram[3] * 10e8, "0.0b")} RAM.\n`);
     } else {
-        ns.tprint(`INFO: ${source} running ${batches} batches against ${tgt}.`);
+        ns.toast(`${source} running ${batches} batches against ${tgt}.`,'INFO');
         let batchStart = ns.getTimeSinceLastAug() + delay;
         for (let i = 0; i < batches; i++) {
             ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0]);
