@@ -1,10 +1,10 @@
-batch/daemon.js
 batch/grow.js
 batch/hack.js
 batch/weaken.js
 analyze.js
 autoUpdate.js
 basicHack.js
+batchDaemon.js
 findHackable.js
 hacknetIdler.js
 scan.js
