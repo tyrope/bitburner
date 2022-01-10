@@ -70,7 +70,7 @@ function calcWeaken(ns, tgt, secIncrease) {
  * @param {Number[4]} threads The amount of threads we need for 1 batch; order: HWGW.
  * @return {Number}           The amount of batches we can run.
  */
-function getBatches(ns, tgt, source, batches, threads) {
+function calcBatches(ns, tgt, source, batches, threads) {
     // Calculate RAM.
     let ramUsed =
         ns.getScriptRam('/batch/hack.js', source) * threads[0] +
@@ -82,11 +82,6 @@ function getBatches(ns, tgt, source, batches, threads) {
 
     // limit.
     if (batches > maxBatches) {
-        if (batches != Infinity) {
-            ns.tprint(`INFO: ${source} can't run ${batches} batches against ${tgt}. Lowering to ${maxBatches}.`);
-        } else {
-            ns.tprint(`INFO: ${source} running ${maxBatches} batches against ${tgt}.`);
-        }
         return maxBatches;
     }
     return batches;
@@ -111,11 +106,12 @@ function calcDelays(runTimes, delay) {
 
 /**
  * Execute a batch hack.
- * @param  {String} target          The server to take money from.
- * @param  {Number} moneyPercent    The percentage of money to hack.
- * @param  {String} source?         The server to execute the hack (default: The server this script runs on).
- * @param  {Number} batches?        The amount of batches to run. Will be limited by RAM. (default: Infinity)
- * @param  {Number} delay?          The delay between attack resolutions in ms (default: 100)
+ * @param {String} target       The server to take money from.
+ * @param {Number} moneyPercent The percentage of money to hack.
+ * @param {Boolean} simulate    If true, don't actually do a hack, but return the required RAM instead.
+ * @param {String} source?      The server to execute the hack (default: The server this script runs on).
+ * @param {Number} batches?     The amount of batches to run. Will be limited by RAM. (default: Infinity)
+ * @param {Number} delay?       The delay between attack resolutions in ms (default: 100)
  */
 
 /** @param {NS} ns **/
@@ -125,15 +121,16 @@ export async function main(ns) {
 
     // TODO: Better argument parsing.
     if (ns.args[1] == undefined) {
-        ns.tprint("Usage: target: string, moneyPercent: number, source?: string, batches?: number, delay?: number");
+        ns.tprint("Usage: target: string, moneyPercent: number, simulate?: boolean, source?: string, batches?: number, delay?: number");
         ns.exit();
     }
 
     let tgt = ns.args[0];
     let moneyPct = ns.args[1];
-    let source = ns.args[2] ? ns.args[2] : ns.getHostname();
-    let batches = ns.args[3] ? ns.args[3] : Infinity;
-    let delay = ns.args[4] ? ns.args[4] : 100;
+    let simulate = ns.args[2] ? ns.args[2] : false;
+    let source = ns.args[3] ? ns.args[3] : ns.getHostname();
+    let batches = ns.args[4] ? ns.args[4] : Infinity;
+    let delay = ns.args[5] ? ns.args[5] : 100;
 
     // Ensure the server is prepped.
     await checkServerPrep(ns, tgt, source);
@@ -163,18 +160,36 @@ export async function main(ns) {
     }
 
     // Get the max amount of Batches we're allowed to run.
-    batches = getBatches(ns, tgt, source, batches, threads);
+    batches = calcBatches(ns, tgt, source, batches, threads);
 
     // Calculate delays.
     let startTimes = calcDelays(runTimes, delay);
 
-    let batchStart = ns.getTimeSinceLastAug() + delay;
-    for (let i = 0; i < batches; i++) {
-        ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0]);
-        ns.exec('/batch/weaken.js', source, threads[1], tgt, batchStart + startTimes[1]);
-        ns.exec('/batch/grow.js', source, threads[2], tgt, batchStart + startTimes[2]);
-        ns.exec('/batch/weaken.js', source, threads[3], tgt, batchStart + startTimes[3]);
-        batchStart += delay * 4;
+    if (simulate) {
+        let ram = [
+            ns.getScriptRam('/batch/hack.js', source) * threads[0],
+            ns.getScriptRam('/batch/weaken.js', source) * threads[1],
+            ns.getScriptRam('/batch/grow.js', source) * threads[2],
+            ns.getScriptRam('/batch/weaken.js', source) * threads[3]
+        ];
+
+
+        ns.tprint(
+            `Gain \$${ns.nFormat(moneyPct * batches, "0.0a")} in ${ns.tFormat(startTimes[0] + runTimes[0] + (delay * 4 * batches))}\n` +
+            `In ${batches} batches using ${ns.nFormat(((ram[0] + ram[1] + ram[2] + ram[3]) * batches) * 10e8, "0.0b")} RAM total.\n` +
+            `Hack(${threads[0]}) uses ${ns.nFormat(ram[0] * 10e8, "0.0b")} RAM.\n` +
+            `Weaken(${threads[1]}) uses ${ns.nFormat(ram[1] * 10e8, "0.0b")} RAM.\n` +
+            `Grow(${threads[2]}) uses ${ns.nFormat(ram[2] * 10e8, "0.0b")} RAM.\n` +
+            `Weaken(${threads[3]}) uses ${ns.nFormat(ram[3] * 10e8, "0.0b")} RAM.\n`);
+    } else {
+        ns.tprint(`INFO: ${source} running ${batches} batches against ${tgt}.`);
+        let batchStart = ns.getTimeSinceLastAug() + delay;
+        for (let i = 0; i < batches; i++) {
+            ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0]);
+            ns.exec('/batch/weaken.js', source, threads[1], tgt, batchStart + startTimes[1]);
+            ns.exec('/batch/grow.js', source, threads[2], tgt, batchStart + startTimes[2]);
+            ns.exec('/batch/weaken.js', source, threads[3], tgt, batchStart + startTimes[3]);
+            batchStart += delay * 4;
+        }
     }
 }
-
