@@ -1,7 +1,6 @@
 batch/grow.js
 batch/hack.js
 batch/weaken.js
-autoUpdate.js
 basicHack.js
 batchDaemon.js
 findHackable.js
