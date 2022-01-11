@@ -1,4 +1,8 @@
 /** @param {NS} ns **/
+export function autocomplete(data, args) {
+    return [...data.servers];
+}
+
 export async function main(ns) {
     ns.disableLog('getServerSecurityLevel');
     ns.disableLog('getServerMaxMoney');

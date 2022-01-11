@@ -1,10 +1,14 @@
 /** @param {NS} ns **/
+export function autocomplete(data, args) {
+    return [...data.servers];
+}
+
 export async function main(ns) {
     let tgt = "";
-    if(ns.args[0] == undefined){
+    if (ns.args[0] == undefined) {
         tprint("No target specified.");
         ns.exit();
-    }else {
+    } else {
         tgt = ns.args[0];
     }
 

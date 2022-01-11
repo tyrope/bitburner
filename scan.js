@@ -6,6 +6,10 @@ parameter: target: String - exact name (case sensitive, maybe) to grow.
 
 let scriptName = "serverGrower.js";
 
+export function autocomplete(data, args) {
+    return [...data.servers];
+}
+
 function getTools(ns) {
     let ret = [];
     if (ns.fileExists('BruteSSH.exe', 'home')) {

@@ -1,3 +1,7 @@
+export function autocomplete(data, args) {
+    return [...data.servers];
+}
+
 /**
  * Checks if the target server has been prepared for batch-hacking
  * @param {NS} ns
