@@ -2,6 +2,7 @@ batch/grow.js
 batch/hack.js
 batch/weaken.js
 basicHack.js
+lib/tableMaker.js
 batchDaemon.js
 findHackable.js
 hacknetIdler.js
