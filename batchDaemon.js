@@ -34,20 +34,36 @@ async function checkServerPrep(ns, tgt, source) {
  * @param {Number} moneyPct The percent of the target's maximum money we want to hack.
  * @return {Number[]}       The amount of threads, hack duration, actual money hacked, security increase.
  */
-function calcHack(ns, tgt, moneyPct) {
+function calcHack(ns, tgt, moneyPct, useFormula) {
     // Calculate the hack.
     let maxMoney = ns.getServerMaxMoney(tgt);
     if (moneyPct > 1) {
         moneyPct /= 100;
         ns.print('INFO: moneyPct was above 1, is now ' + moneyPct);
     }
-    let threads = Math.floor(ns.hackAnalyzeThreads(tgt, maxMoney * moneyPct));
-    return [
-        threads,
-        ns.getHackTime(tgt),
-        ns.hackAnalyze(tgt) * threads * maxMoney,
-        ns.hackAnalyzeSecurity(threads)
-    ];
+    if (useFormula) {
+        // We're simulating using formulas, modify the target.
+        let srv = ns.getServer(tgt);
+        srv.hackDifficulty = srv.minDifficulty;
+        srv.moneyAvailable = srv.moneyMax;
+        let p = ns.getPlayer();
+
+        let threads = Math.floor(moneyPct / ns.formulas.hacking.hackPercent(srv, p));
+        return [
+            threads,
+            ns.formulas.hacking.hackTime(srv, p),
+            ns.formulas.hacking.hackPercent(srv, p) * threads * maxMoney,
+            ns.hackAnalyzeSecurity(threads)
+        ];
+    } else {
+        let threads = Math.floor(ns.hackAnalyzeThreads(tgt, maxMoney * moneyPct));
+        return [
+            threads,
+            ns.getHackTime(tgt),
+            ns.hackAnalyze(tgt) * threads * maxMoney,
+            ns.hackAnalyzeSecurity(threads)
+        ];
+    }
 }
 
 /**
@@ -57,13 +73,26 @@ function calcHack(ns, tgt, moneyPct) {
  * @param {Number} moneyPct The amount of money we've stolen.
  * @return {Number[]}  The amount of threads, grow duration.
  */
-function calcGrow(ns, tgt, moneyPct) {
+function calcGrow(ns, tgt, moneyPct, useFormula) {
     let max = ns.getServerMaxMoney(tgt);
     let regrow = Math.max(1, max / (max - moneyPct));
-    return [
-        Math.ceil(ns.growthAnalyze(tgt, regrow)),
-        ns.getGrowTime(tgt)
-    ];
+    if (useFormula) {
+        // We're simulating using formulas, modify the target.
+        let srv = ns.getServer(tgt);
+        srv.hackDifficulty = srv.minDifficulty;
+        srv.moneyAvailable = srv.moneyMax - moneyPct;
+        let p = ns.getPlayer();
+
+        return [
+            Math.ceil(Math.log(regrow) / Math.log(ns.formulas.hacking.growPercent(srv, 1, p))),
+            ns.formulas.hacking.growTime(srv, p)
+        ];
+    } else {
+        return [
+            Math.ceil(ns.growthAnalyze(tgt, regrow)),
+            ns.getGrowTime(tgt)
+        ];
+    }
 }
 
 /**
@@ -73,7 +102,7 @@ function calcGrow(ns, tgt, moneyPct) {
  * @param {Number} sec The amount of security we need to lower.
  * @return {Number[]}  The amount of threads, weaken duration.
  */
-function calcWeaken(ns, tgt, secIncrease) {
+function calcWeaken(ns, tgt, secIncrease, useFormula) {
     // Calculate the weaken we need to counter hack.
     let secEffect = 0;
     let threads = 0;
@@ -81,7 +110,16 @@ function calcWeaken(ns, tgt, secIncrease) {
         threads++;
         secEffect = ns.weakenAnalyze(threads);
     }
-    return [threads, ns.getWeakenTime(tgt)];
+    if (useFormula) {
+        let srv = ns.getServer(tgt);
+        srv.hackDifficulty = srv.minDifficulty;
+        srv.moneyAvailable = srv.moneyMax;
+        let p = ns.getPlayer();
+
+        return [threads, ns.formulas.hacking.weakenTime(srv, p)];
+    } else {
+        return [threads, ns.getWeakenTime(tgt)];
+    }
 }
 
 /**
@@ -133,22 +171,29 @@ function calcDelays(runTimes, delay) {
  * @return {number[]} [RAM Usage, Time in ms, hacked money.]
  */
 export function getBatchInfo(ns, tgt, percent) {
+    let canSim;
+    if (ns.fileExists("Formulas.exe", "home")) {
+        canSim = true;
+    } else {
+        canSim = false;
+    }
+
     let threads = Array(4);
     // Calculate the hacking threads.
-    let calc = calcHack(ns, tgt, percent);
+    let calc = calcHack(ns, tgt, percent, canSim);
     threads[0] = calc[0];
     let moneyPct = calc[2];
 
     // Calculate the weaken we need to counter hack.
-    calc = calcWeaken(ns, tgt, calc[3]);
+    calc = calcWeaken(ns, tgt, calc[3], canSim);
     threads[1] = calc[0];
 
     // Calculate the grow we need.
-    calc = calcGrow(ns, tgt, moneyPct);
+    calc = calcGrow(ns, tgt, moneyPct, canSim);
     threads[2] = calc[0];
 
     // Calculate the weaken we need to counter grow.
-    calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]));
+    calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]), canSim);
     threads[3] = calc[0];
 
     return ([
@@ -192,20 +237,20 @@ export async function main(ns) {
     await checkServerPrep(ns, tgt, source);
 
     // Calculate the hacking threads.
-    let calc = calcHack(ns, tgt, moneyPct);
+    let calc = calcHack(ns, tgt, moneyPct, simulate);
     threads.push(calc[0]); runTimes.push(calc[1]);
     moneyPct = calc[2];
 
     // Calculate the weaken we need to counter hack.
-    calc = calcWeaken(ns, tgt, calc[3]);
+    calc = calcWeaken(ns, tgt, calc[3], simulate);
     threads.push(calc[0]); runTimes.push(calc[1]);
 
     // Calculate the grow we need.
-    calc = calcGrow(ns, tgt, moneyPct);
+    calc = calcGrow(ns, tgt, moneyPct, simulate);
     threads.push(calc[0]); runTimes.push(calc[1]);
 
     // Calculate the weaken we need to counter grow.
-    calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]));
+    calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]), simulate);
     threads.push(calc[0]); runTimes.push(calc[1]);
 
     // Ensure the source server has the files.
