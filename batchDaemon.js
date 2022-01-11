@@ -231,11 +231,11 @@ export async function main(ns) {
 
         ns.tprint(
             `Gain \$${ns.nFormat(moneyPct * batches, "0.0a")} in ${ns.tFormat(startTimes[3] + runTimes[3] + (delay * 4 * batches))}\n` +
-            `In ${batches} batches using ${ns.nFormat(((ram[0] + ram[1] + ram[2] + ram[3]) * batches) * 10e8, "0.0b")} RAM total.\n` +
-            `Hack(${threads[0]}) uses ${ns.nFormat(ram[0] * 10e8, "0.0b")} RAM.\n` +
-            `Weaken(${threads[1]}) uses ${ns.nFormat(ram[1] * 10e8, "0.0b")} RAM.\n` +
-            `Grow(${threads[2]}) uses ${ns.nFormat(ram[2] * 10e8, "0.0b")} RAM.\n` +
-            `Weaken(${threads[3]}) uses ${ns.nFormat(ram[3] * 10e8, "0.0b")} RAM.\n`);
+            `In ${batches} batches using ${ns.nFormat(((ram[0] + ram[1] + ram[2] + ram[3]) * batches) * 1e9, "0.0b")} RAM total.\n` +
+            `Hack(${threads[0]}) uses ${ns.nFormat(ram[0] * 1e9, "0.0b")} RAM.\n` +
+            `Weaken(${threads[1]}) uses ${ns.nFormat(ram[1] * 1e9, "0.0b")} RAM.\n` +
+            `Grow(${threads[2]}) uses ${ns.nFormat(ram[2] * 1e9, "0.0b")} RAM.\n` +
+            `Weaken(${threads[3]}) uses ${ns.nFormat(ram[3] * 1e9, "0.0b")} RAM.\n`);
     } else {
         ns.toast(`${source} running ${batches} batches against ${tgt}.`, 'info');
         let batchStart = ns.getTimeSinceLastAug() + delay;
