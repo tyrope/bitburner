@@ -39,7 +39,15 @@ export async function main(ns) {
 }
 
 function getServerScore(ns, server, pct) {
-    let chanceToHack = ns.hackAnalyzeChance(server);
+    let chanceToHack;
+    if (ns.fileExists("Formulas.exe", "home")) {
+        let srv = ns.getServer(server);
+        srv.hackDifficulty = srv.minDifficulty;
+        srv.moneyAvailable = srv.moneyMax;
+        chanceToHack = ns.formulas.hacking.hackChance(srv, ns.getPlayer());
+    } else {
+        chanceToHack = ns.hackAnalyzeChance(server);
+    }
     let batchInfo = getBatchInfo(ns, server, pct);
     let moneyPerSec = batchInfo[2] / batchInfo[1];
     return (moneyPerSec * chanceToHack) / (batchInfo[0] * 0.25);
