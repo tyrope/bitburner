@@ -1,0 +1,9 @@
+# Ignore scripts made by others.
+lib/getopts.js
+lib/matrix.js
+
+# Ignore the bitburner export.
+bitburnerFiles.zip
+
+# Ignore this one in particular.
+test.js
