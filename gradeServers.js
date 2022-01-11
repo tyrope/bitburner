@@ -42,7 +42,7 @@ function getServerScore(ns, server, pct) {
     let chanceToHack = ns.hackAnalyzeChance(server);
     let batchInfo = getBatchInfo(ns, server, pct);
     let moneyPerSec = batchInfo[2] / batchInfo[1];
-    return ((moneyPerSec * chanceToHack) / (batchInfo[0] * 0.25));
+    return (moneyPerSec * chanceToHack) / (batchInfo[0] * 0.25);
 }
 
 function getServerInfo(ns, server, pct, verbose) {
