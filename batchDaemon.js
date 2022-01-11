@@ -146,6 +146,7 @@ export function getBatchInfo(ns, tgt, percent) {
     // Calculate the weaken we need to counter grow.
     calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]));
     threads[3] = calc[0];
+
     return ([
         ns.getScriptRam('/batch/hack.js', "home") * threads[0] +
         ns.getScriptRam('/batch/grow.js', "home") * threads[2] +
@@ -237,7 +238,7 @@ export async function main(ns) {
             `Grow(${threads[2]}) uses ${ns.nFormat(ram[2] * 1e9, "0.0b")} RAM.\n` +
             `Weaken(${threads[3]}) uses ${ns.nFormat(ram[3] * 1e9, "0.0b")} RAM.\n`);
     } else {
-        ns.toast(`${source} running ${batches} batches against ${tgt}.`, 'info');
+        ns.tprint(`INFO: ${source} running ${batches} batches against ${tgt}.`);
         let batchStart = ns.getTimeSinceLastAug() + delay;
         for (let i = 0; i < batches; i++) {
             ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0]);
