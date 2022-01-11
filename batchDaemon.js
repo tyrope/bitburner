@@ -189,6 +189,10 @@ export async function main(ns) {
             ns.getScriptRam('/batch/weaken.js', source) * threads[3]
         ];
 
+        if(batches == 0){
+            // If we can't run any batches during a simulation, just run one.
+            batches = 1;
+        }
 
         ns.tprint(
             `Gain \$${ns.nFormat(moneyPct * batches, "0.0a")} in ${ns.tFormat(startTimes[0] + runTimes[0] + (delay * 4 * batches))}\n` +
