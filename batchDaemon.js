@@ -33,7 +33,10 @@ async function checkServerPrep(ns, tgt, source) {
 function calcHack(ns, tgt, moneyPct) {
     // Calculate the hack.
     let maxMoney = ns.getServerMaxMoney(tgt);
-    if (moneyPct > 1) moneyPct /= 100;
+    if (moneyPct > 1) {
+        moneyPct /= 100;
+        ns.print('INFO: moneyPct was above 1, is now ' + moneyPct);
+    }
     let threads = Math.floor(ns.hackAnalyzeThreads(tgt, maxMoney * moneyPct));
     return [
         threads,
@@ -52,7 +55,7 @@ function calcHack(ns, tgt, moneyPct) {
  */
 function calcGrow(ns, tgt, moneyPct) {
     let max = ns.getServerMaxMoney(tgt);
-    let regrow = max / (max - moneyPct);
+    let regrow = Math.max(1, max / (max - moneyPct));
     return [
         Math.ceil(ns.growthAnalyze(tgt, regrow)),
         ns.getGrowTime(tgt)
@@ -118,7 +121,39 @@ function calcDelays(runTimes, delay) {
     ];
 }
 
-/*********************************** ENTRY POINT ***********************************/
+/**
+ * Returns information about a percent% batch hack against tgt
+ * @params {NS} ns
+ * @params {String} tgt Target server
+ * @params {number} percent decimal-represented money percentage
+ * @return {number[]} [RAM Usage, Time in ms, hacked money.]
+ */
+export function getBatchInfo(ns, tgt, percent) {
+    let threads = Array(4);
+    // Calculate the hacking threads.
+    let calc = calcHack(ns, tgt, percent);
+    threads[0] = calc[0];
+    let moneyPct = calc[2];
+
+    // Calculate the weaken we need to counter hack.
+    calc = calcWeaken(ns, tgt, calc[3]);
+    threads[1] = calc[0];
+
+    // Calculate the grow we need.
+    calc = calcGrow(ns, tgt, moneyPct);
+    threads[2] = calc[0];
+
+    // Calculate the weaken we need to counter grow.
+    calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]));
+    threads[3] = calc[0];
+    return ([
+        ns.getScriptRam('/batch/hack.js', "home") * threads[0] +
+        ns.getScriptRam('/batch/grow.js', "home") * threads[2] +
+        ns.getScriptRam('/batch/weaken.js', "home") * (threads[1] + threads[3]),
+        calc[1],
+        moneyPct
+    ]);
+}
 
 /**
  * Execute a batch hack.
@@ -189,13 +224,13 @@ export async function main(ns) {
             ns.getScriptRam('/batch/weaken.js', source) * threads[3]
         ];
 
-        if(batches == 0){
+        if (batches == 0) {
             // If we can't run any batches during a simulation, just run one.
             batches = 1;
         }
 
         ns.tprint(
-            `Gain \$${ns.nFormat(moneyPct * batches, "0.0a")} in ${ns.tFormat(startTimes[0] + runTimes[0] + (delay * 4 * batches))}\n` +
+            `Gain \$${ns.nFormat(moneyPct * batches, "0.0a")} in ${ns.tFormat(startTimes[3] + runTimes[3] + (delay * 4 * batches))}\n` +
             `In ${batches} batches using ${ns.nFormat(((ram[0] + ram[1] + ram[2] + ram[3]) * batches) * 10e8, "0.0b")} RAM total.\n` +
             `Hack(${threads[0]}) uses ${ns.nFormat(ram[0] * 10e8, "0.0b")} RAM.\n` +
             `Weaken(${threads[1]}) uses ${ns.nFormat(ram[1] * 10e8, "0.0b")} RAM.\n` +
