@@ -4,6 +4,7 @@ batch/weaken.js
 lib/tableMaker.js
 batchDaemon.js
 findHackable.js
+gradeServers.js
 hacknetIdler.js
 scan.js
 serverGrower.js
