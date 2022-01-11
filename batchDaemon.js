@@ -241,7 +241,7 @@ export async function main(ns) {
         ns.tprint(`INFO: ${source} running ${batches} batches against ${tgt}.`);
         let batchStart = ns.getTimeSinceLastAug() + delay;
         for (let i = 0; i < batches; i++) {
-            ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0]);
+            ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0], moneyPct);
             ns.exec('/batch/weaken.js', source, threads[1], tgt, batchStart + startTimes[1]);
             ns.exec('/batch/grow.js', source, threads[2], tgt, batchStart + startTimes[2]);
             ns.exec('/batch/weaken.js', source, threads[3], tgt, batchStart + startTimes[3]);
