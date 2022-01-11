@@ -4,7 +4,7 @@ export async function main(ns) {
     let profit = await ns.hack(ns.args[0]);
 
     while (profit == 0) {
-        await sleep(100);
+        await ns.sleep(100);
     }
     ns.toast(`Hacked \$${ns.nFormat(profit, "0.0a")} from ${ns.args[0]}`, 'success');
 }
