@@ -170,11 +170,8 @@ function calcDelays(runTimes, delay) {
  * @params {number} percent decimal-represented money percentage
  * @return {number[]} [RAM Usage, Time in ms, hacked money.]
  */
-export function getBatchInfo(ns, tgt, percent) {
-    let canSim;
-    if (ns.fileExists("Formulas.exe", "home")) {
-        canSim = true;
-    } else {
+export function getBatchInfo(ns, tgt, percent, canSim) {
+    if (!ns.fileExists("Formulas.exe", "home")) {
         canSim = false;
     }
 
