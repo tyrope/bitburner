@@ -26,4 +26,3 @@ export async function main(ns) {
     }
     ns.tprint(ns.getHostname() + " completed growing " + tgt);
 }
-

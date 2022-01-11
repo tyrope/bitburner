@@ -2,29 +2,29 @@
 // Usage: run srvMngr.script [RAM] [mode]
 // parameter RAM: Amount of RAM.
 // parameter mode:
-//    1 = Delete servers small than the RAM.
+//	1 = Delete servers small than the RAM.
 //  2 = Check price of 1 server with RAM.
 //  Anything else = Buy max amount of servers with RAM.
 
 if(args[0] === undefined){
-    tprint("No amount RAM provided.");
-    exit();
+	tprint("No amount RAM provided.");
+	exit();
 }
 
 if (args[1] == 1) {
-    srvs = getPurchasedServers();
-    for (var i = 0; i < srvs.length; i++) {
-        if (getServerMaxRam(srvs[i]) < args[0]) {
-            killall(srvs[i]);
-            deleteServer(srvs[i]);
-        }
-    }
+	srvs = getPurchasedServers();
+	for (var i = 0; i < srvs.length; i++) {
+		if (getServerMaxRam(srvs[i]) < args[0]) {
+			killall(srvs[i]);
+			deleteServer(srvs[i]);
+		}
+	}
 } else if (args[1] == 2) {
-    tprint(getPurchasedServerCost(args[0]));
+	tprint(getPurchasedServerCost(args[0]));
 } else {
-    while (getPurchasedServers().length < getPurchasedServerLimit()) {
-        if (getPurchasedServerCost(args[0]) < getServerMoneyAvailable("home")) {
-            var host = purchaseServer("srv", args[0]);
-        }
-    }
+	while (getPurchasedServers().length < getPurchasedServerLimit()) {
+		if (getPurchasedServerCost(args[0]) < getServerMoneyAvailable("home")) {
+			var host = purchaseServer("srv", args[0]);
+		}
+	}
 }

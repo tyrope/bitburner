@@ -67,4 +67,3 @@ export async function main(ns) {
             ns.tprint("Wrong parameters.");
     }
 }
-

@@ -1,14 +1,14 @@
 var money = 0;
 
 while (true) {
-    // Make sure we're not fighting unneeded security.
-    while (getServerSecurityLevel('n00dles') > 1) {
-        weaken('n00dles');
-    }
+	// Make sure we're not fighting unneeded security.
+	while (getServerSecurityLevel('n00dles') > 1) {
+		weaken('n00dles');
+	}
 
-    money = hack('n00dles');
-    if (money > 0 && money < 2) {
-        tprint("N00dles is going to stop draining... " + money);
-        exit();
-    }
+	money = hack('n00dles');
+	if (money > 0 && money < 2) {
+		tprint("N00dles is going to stop draining... " + money);
+		exit();
+	}
 }

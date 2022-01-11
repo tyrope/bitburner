@@ -6,16 +6,16 @@ disableLog('getServerMaxMoney');
 // Infinite loop, go!
 while (true) {
 
-    // Make sure we're not fighting unneeded security.
-    while (getServerSecurityLevel(srv) > getServerMinSecurityLevel(srv)) {
-        weaken(srv);
-    }
+	// Make sure we're not fighting unneeded security.
+	while (getServerSecurityLevel(srv) > getServerMinSecurityLevel(srv)) {
+		weaken(srv);
+	}
 
-    // Make sure the server has max money available.
-    if (getServerMoneyAvailable(srv) < getServerMaxMoney(srv)) {
-        grow(srv);
-        continue;
-    }
+	// Make sure the server has max money available.
+	if (getServerMoneyAvailable(srv) < getServerMaxMoney(srv)) {
+		grow(srv);
+		continue;
+	}
 
-    hack(srv);
+	hack(srv);
 }

@@ -14,4 +14,3 @@ export async function main(ns) {
         ns.toast(`Hacked \$${ns.nFormat(profit, "0.000a")} from ${ns.args[0]}`, 'success');
     }
 }
-

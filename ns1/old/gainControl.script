@@ -1,18 +1,18 @@
 // Get root if needed.
 if (hasRootAccess(args[0]) == false) {
-    var ports = getServerNumPortsRequired(args[0]);
-        ftpcrack(args[0]);
-        brutessh(args[0]);
-    if (ports > 2) {
-        tprint("Could not acquire root access on " + args[0]);
-        exit();
-    }
-    nuke(args[0]);
+	var ports = getServerNumPortsRequired(args[0]);
+		ftpcrack(args[0]);
+		brutessh(args[0]);
+	if (ports > 2) {
+		tprint("Could not acquire root access on " + args[0]);
+		exit();
+	}
+	nuke(args[0]);
 }
 
 // Kill the basicHack script if it's running.
 if (scriptRunning("serverGrower.script", args[0])) {
-    scriptKill("serverGrower.script", args[0]);
+	scriptKill("serverGrower.script", args[0]);
 }
 
 // Copy over the basicHack script.
@@ -23,6 +23,5 @@ var threads = Math.floor((getServerMaxRam(args[0]) - getServerUsedRam(args[0])) 
 
 // run the server grower, if we can.
 if (threads > 0) {
-    exec("serverGrower.script", args[0], threads);
+	exec("serverGrower.script", args[0], threads);
 }
-

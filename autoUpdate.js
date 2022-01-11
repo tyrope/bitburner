@@ -74,4 +74,3 @@ export async function main(ns) {
     ns.rm("fileNames.txt");
     ns.toast("Update complete.");
 }
-
