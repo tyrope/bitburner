@@ -8,40 +8,38 @@ let scriptName = "serverGrower.js";
 
 function getTools(ns) {
     let ret = [];
-    if(ns.fileExists('BruteSSH.exe', 'home')){
+    if (ns.fileExists('BruteSSH.exe', 'home')) {
         ret.push('ssh');
     }
-    if(ns.fileExists('FTPCrack.exe', 'home')){
+    if (ns.fileExists('FTPCrack.exe', 'home')) {
         ret.push('ftp');
     }
-    if(ns.fileExists('HTTPWorm.exe', 'home')){
+    if (ns.fileExists('HTTPWorm.exe', 'home')) {
         ret.push('http');
     }
-    if(ns.fileExists('SQLInject.exe', 'home')){
+    if (ns.fileExists('SQLInject.exe', 'home')) {
         ret.push('sql');
     }
-    if(ns.fileExists('relaySMTP.exe', 'home')){
+    if (ns.fileExists('relaySMTP.exe', 'home')) {
         ret.push('smtp');
     }
     return ret;
 }
 
-function getRoot(ns, server) {
-    if(ns.hasRootAccess(server) == true) {
+function getRoot(ns, server, tools) {
+    if (ns.hasRootAccess(server) == true) {
         // We already have root you dumbdumb.
         return true;
     }
-
-    let tools = getTools(ns);
     let ports = ns.getServerNumPortsRequired(server)
-    if(ports > tools.length){
+    if (ports > tools.length) {
         // Can't open enough ports.
         return false;
     }
 
     // Don't you wish we could just ns.run(tools[i])? Yeah me too.
-    for(let i = 0; i < ports; i++) {
-        switch(tools[i]){
+    for (let i = 0; i < ports; i++) {
+        switch (tools[i]) {
             case 'ssh':
                 ns.brutessh(server);
                 break;
@@ -63,15 +61,15 @@ function getRoot(ns, server) {
     // FIRE ZE MISSILES!
     ns.nuke(server);
 
-    if(ns.hasRootAccess(server) == false){
-        ns.tprint("FAILED getting root: "+server);
+    if (ns.hasRootAccess(server) == false) {
+        ns.tprint("FAILED getting root: " + server);
         return false;
     }
     return true;
 }
 
-async function control(ns, server) {
-    if(getRoot(ns, server) == false){
+async function control(ns, server, tools) {
+    if (getRoot(ns, server, tools) == false) {
         // No root, no scripts.
         return;
     }
@@ -90,8 +88,8 @@ async function control(ns, server) {
     }
 }
 
-export async function main(ns){
-    if(ns.args[0] == undefined){
+export async function main(ns) {
+    if (ns.args[0] == undefined) {
         ns.tprint("No target specified.");
         ns.exit();
     }
@@ -100,13 +98,14 @@ export async function main(ns){
     let frontier = ["home"]; // List of the servers we're going to scan.
     let todo; // Current server we're scanning.
     let neighbors; // The servers adjacent to todo
+    let tools = getTools(ns);
 
     // Main loop.
     while (frontier.length > 0) {
         // Get the next server.
         todo = frontier.shift()
         // Control it.
-        await control(ns, todo);
+        await control(ns, todo, tools);
         // Tell the script we've scanned it.
         scanned.push(todo);
         // Go through it's neighbors.
