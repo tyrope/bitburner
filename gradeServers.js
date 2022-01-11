@@ -27,9 +27,9 @@ export async function main(ns) {
 
     let data;
     if (verbose) {
-        data = [["SERVER", "Max $", "Gr", "<S", "%h", "$*Gr", "$/s", "Score"]];
+        data = [["SERVER", "Max $", "Gr", "<S", "%h", "$*Gr", "$/s", "RAM", "Score"]];
     } else {
-        data = [["SERVER", "$/s", "Score"]];
+        data = [["SERVER", "$/s", "RAM", "Score"]];
     }
 
     for (let server of servers) {
@@ -58,10 +58,16 @@ function getServerInfo(ns, server, pct, verbose) {
             `${Math.round(ns.hackAnalyzeChance(server) * 100)}%`,
             `${ns.nFormat(maxMoney * growth, "0.00a")}`,
             ns.nFormat(batchInfo[2] / batchInfo[1], "0.00a"),
+            ns.nFormat(batchInfo[0] * 1e9, "0.00b"),
             ns.nFormat(getServerScore(ns, server, pct), "0.000")
         ]);
     } else {
-        return ([server, batchInfo[2] / batchInfo[1], ns.nFormat(getServerScore(ns, server, pct), "0.000")]);
+        return ([
+            server,
+            ns.nFormat(batchInfo[2] / batchInfo[1], "0.000a"),
+            ns.nFormat(batchInfo[0] * 1e9, "0.00b"),
+            ns.nFormat(getServerScore(ns, server, pct), "0.000")
+        ]);
     }
 }
 
