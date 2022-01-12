@@ -1,4 +1,6 @@
-/** @param {NS} ns **/
+// Hacknet Idler (c) 2022 Tyrope
+// Usage: run hacknetIdler.js
+// Make sure you tweak the values below unless you feel like losing a lot of money.
 
 // Configuration.
 let maxNodes = 30; //Max Infinity.
@@ -8,10 +10,12 @@ let maxCore = 16; //Max 16
 let sleepPurchase = 1; // Amount of time to sleep after we've bought something
 let sleepCycle = 10000; // Amount of time to sleep after we've finished a full cycle.
 
+/** @param {NS} ns **/
 function myCash(ns) {
     return ns.getServerMoneyAvailable("home");
 }
 
+/** @param {NS} ns **/
 export async function main(ns) {
     ns.disableLog("getServerMoneyAvailable");
     ns.disableLog("sleep");

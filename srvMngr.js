@@ -9,7 +9,7 @@
 // parameter amount: Amount of server(s) to buy.
 // parameter name: Name of server(s) to buy.
 
-
+/** @param {NS} ns **/
 function deleteServers(ns, delAll) {
     let del = 0;
     let srvs = ns.getPurchasedServers();
@@ -25,6 +25,7 @@ function deleteServers(ns, delAll) {
     ns.tprint(`Deleted ${del} servers.`);
 }
 
+/** @param {NS} ns **/
 async function purchase(ns) {
     for (let i = 0; i < ns.args[2]; i++) {
         while (true) {
@@ -39,10 +40,12 @@ async function purchase(ns) {
     }
 }
 
+/** @param {NS} ns **/
 function price(ns) {
     ns.tprint(`A server with ${ns.nFormat(ns.args[0] * 10e8, "0.0b")}RAM costs ${ns.nFormat(ns.getPurchasedServerCost(ns.args[0]), "0.0a")}`);
 }
 
+/** @param {NS} ns **/
 export async function main(ns) {
     if (ns.args[1] === undefined) {
         ns.tprint("Wrong parameters.");

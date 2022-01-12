@@ -1,3 +1,12 @@
+// Batch Daemon v1 (c) 2022 Tyrope
+// Usage: run batchDaemon.js [target] [moneyPercent] (simulate) (source) (batches) (delay)
+// Parameter target:       The server to take money from.
+// Parameter moneyPercent: The percentage of money to hack.
+// Parameter simulate:     If true, only output what would happen, don't actually hack. (default: false)
+// Parameter source        The server to execute the hack. (default: The server this script runs on)
+// Parameter batches       The amount of batches to run. Will be limited by RAM. (default: Infinity)
+// Parameter delay         The delay between attack resolutions in ms. (default: 200)
+
 export function autocomplete(data, args) {
     return [...data.servers];
 }
@@ -32,16 +41,17 @@ async function checkServerPrep(ns, tgt, source) {
  * @param {NS} ns
  * @param {String} tgt      The hostname of the target server.
  * @param {Number} moneyPct The percent of the target's maximum money we want to hack.
+ * @param {Boolean} canSim  True is using ns.formulas instead of live data.
  * @return {Number[]}       The amount of threads, hack duration, actual money hacked, security increase.
  */
-function calcHack(ns, tgt, moneyPct, useFormula) {
+function calcHack(ns, tgt, moneyPct, canSim) {
     // Calculate the hack.
     let maxMoney = ns.getServerMaxMoney(tgt);
     if (moneyPct > 1) {
         moneyPct /= 100;
         ns.print('INFO: moneyPct was above 1, is now ' + moneyPct);
     }
-    if (useFormula) {
+    if (canSim) {
         // We're simulating using formulas, modify the target.
         let srv = ns.getServer(tgt);
         srv.hackDifficulty = srv.minDifficulty;
@@ -71,12 +81,13 @@ function calcHack(ns, tgt, moneyPct, useFormula) {
  * @param {NS} ns
  * @param {String} tgt The hostname of the target server.
  * @param {Number} moneyPct The amount of money we've stolen.
+ * @param {Boolean} canSim  True is using ns.formulas instead of live data.
  * @return {Number[]}  The amount of threads, grow duration.
  */
-function calcGrow(ns, tgt, moneyPct, useFormula) {
+function calcGrow(ns, tgt, moneyPct, canSim) {
     let max = ns.getServerMaxMoney(tgt);
     let regrow = Math.max(1, max / (max - moneyPct));
-    if (useFormula) {
+    if (canSim) {
         // We're simulating using formulas, modify the target.
         let srv = ns.getServer(tgt);
         srv.hackDifficulty = srv.minDifficulty;
@@ -98,11 +109,12 @@ function calcGrow(ns, tgt, moneyPct, useFormula) {
 /**
  * Calculate the amount of weaken threads needed for a batch attack.
  * @param {NS} ns
- * @param {String} tgt The hostname of the target server.
- * @param {Number} sec The amount of security we need to lower.
- * @return {Number[]}  The amount of threads, weaken duration.
+ * @param {String} tgt        The hostname of the target server.
+ * @param {Number} secIncrase The amount of security we need to lower.
+ * @param {Boolean} canSim    True is using ns.formulas instead of live data.
+ * @return {Number[]}         The amount of threads, weaken duration.
  */
-function calcWeaken(ns, tgt, secIncrease, useFormula) {
+function calcWeaken(ns, tgt, secIncrease, canSim) {
     // Calculate the weaken we need to counter hack.
     let secEffect = 0;
     let threads = 0;
@@ -110,7 +122,7 @@ function calcWeaken(ns, tgt, secIncrease, useFormula) {
         threads++;
         secEffect = ns.weakenAnalyze(threads);
     }
-    if (useFormula) {
+    if (canSim) {
         let srv = ns.getServer(tgt);
         srv.hackDifficulty = srv.minDifficulty;
         srv.moneyAvailable = srv.moneyMax;
@@ -168,6 +180,7 @@ function calcDelays(runTimes, delay) {
  * @params {NS} ns
  * @params {String} tgt Target server
  * @params {number} percent decimal-represented money percentage
+ * @param {Boolean} canSim  True is using ns.formulas instead of live data.
  * @return {number[]} [RAM Usage, Time in ms, hacked money.]
  */
 export function getBatchInfo(ns, tgt, percent, canSim) {
@@ -201,16 +214,6 @@ export function getBatchInfo(ns, tgt, percent, canSim) {
         moneyPct
     ]);
 }
-
-/**
- * Execute a batch hack.
- * @param {String} target       The server to take money from.
- * @param {Number} moneyPercent The percentage of money to hack.
- * @param {Boolean} simulate    If true, don't actually do a hack, but return the required RAM instead.
- * @param {String} source?      The server to execute the hack (default: The server this script runs on).
- * @param {Number} batches?     The amount of batches to run. Will be limited by RAM. (default: Infinity)
- * @param {Number} delay?       The delay between attack resolutions in ms (default: 100)
- */
 
 /** @param {NS} ns **/
 export async function main(ns) {

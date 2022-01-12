@@ -1,7 +1,11 @@
-/** @param {NS} ns **/
+// Find Hackable (c) 2022 Tyrope
+// Usage: run findHackable.js
 
+/** Prints a server if it's below our level and has money.
+ * @param {NS} ns
+ * @param {String} server
+**/
 function checkIfTodo(ns, server) {
-    // TODO change below to the effective hacking level required.
     let lvl = ns.getServerRequiredHackingLevel(server);
     let money = ns.getServerMaxMoney(server);
 
@@ -20,17 +24,14 @@ function checkIfTodo(ns, server) {
     }
 }
 
+/** @param {NS} ns **/
 export async function main(ns) {
     let scanned = [];
     let frontier = ["home"];
     let todo; let neighbors;
 
 
-    ns.disableLog('scan');
-    ns.disableLog('getHackingLevel');
-    ns.disableLog('getServerRequiredHackingLevel');
-    ns.disableLog('getServerMaxMoney');
-    
+    ns.disableLog('ALL');
     ns.clearLog();
 
     // Find all servers.

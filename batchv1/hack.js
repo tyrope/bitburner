@@ -1,3 +1,6 @@
+// Batchv1 Hack script (c) 2022 Tyrope
+// Not intended for direct use; run batchDaemon.js instead.
+
 /** @param {NS} ns **/
 export async function main(ns) {
     await ns.sleep(ns.args[1] - ns.getTimeSinceLastAug());

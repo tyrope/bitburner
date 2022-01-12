@@ -1,3 +1,6 @@
+// Batchv1 Grow script (c) 2022 Tyrope
+// Not intended for direct use; run batchDaemon.js instead.
+
 /** @param {NS} ns **/
 export async function main(ns) {
     if (ns.args[1] === undefined) {

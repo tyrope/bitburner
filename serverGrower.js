@@ -1,8 +1,12 @@
-/** @param {NS} ns **/
+// Server Grower (c) 2022 Tyrope
+// Usage: run serverGrower.js [target]
+// parameter target: The server to grow.
+
 export function autocomplete(data, args) {
     return [...data.servers];
 }
 
+/** @param {NS} ns **/
 export async function main(ns) {
     let tgt = "";
     if (ns.args[0] == undefined) {

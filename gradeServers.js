@@ -1,5 +1,12 @@
+// Server Grader (c) 2022 Tyrope
+// Usage: run serverGrader.js (percent) (verbose) (topOnly)
+// Parameter percent: The % of maxMoney the batch will be stealing. (default: 20)
+// Parameter verbose: If true, widens the table with a bunch of extra values. (default: false)
+// Parameter topOnly: If given a number, will limit the amount of servers to only the top n. (default: Infinity)
+
 import { makeTable } from 'lib/tableMaker.js'
 import { getBatchInfo } from 'batchv1/batchDaemon.js'
+
 /** @param {NS} ns **/
 export async function main(ns) {
     ns.disableLog('ALL');
@@ -43,6 +50,13 @@ export async function main(ns) {
     ns.print(makeTable(data, false));
 }
 
+/** Calculate the score of 1 server.
+ * @param {NS} ns
+ * @param {String} server       Server to score.
+ * @param {Number} pct          Percentage of maxMoney to hack.
+ * @param {Boolean} useFormulas If true, use formulas to maxMoney/minSec. If false, live data.
+ * @return {Number} The server's score.
+**/
 function getServerScore(ns, server, pct, useFormulas) {
     let chanceToHack;
     if (useFormulas) {
@@ -58,6 +72,14 @@ function getServerScore(ns, server, pct, useFormulas) {
     return (moneyPerSec * chanceToHack) / (batchInfo[0] * 0.25);
 }
 
+/** Get all the data of 1 server.
+ * @param {NS} ns
+ * @param {String} server       Server to score.
+ * @param {Number} pct          Percentage of maxMoney to hack.
+ * @param {Boolean} verbose     If true, add a whole bunch of extra values.
+ * @param {Boolean} useFormulas If true, use formulas to maxMoney/minSec. If false, live data.
+ * @return {Object[]} The server's information.
+**/
 function getServerInfo(ns, server, pct, verbose, useFormulas) {
     let batchInfo = getBatchInfo(ns, server, pct, useFormulas);
     if (verbose) {
@@ -93,6 +115,10 @@ function getServerInfo(ns, server, pct, verbose, useFormulas) {
     }
 }
 
+/** Breadth-first scan of the entire network.
+ * @param {NS} ns
+ * @return {String[]} list of servers.
+**/
 function scanServers(ns) {
     let scanned = []; // List of all the scanned servers.
     let frontier = ["home"]; // List of the servers we're going to scan.

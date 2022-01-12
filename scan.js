@@ -1,8 +1,6 @@
-/** @param {NS} ns
-This script goes through *all* servers in the game and runs serverGrower.script on them.
-Usage: run scan.js target
-parameter: target: String - exact name (case sensitive, maybe) to grow.
-**/
+// This script goes through *all* servers in the game and runs scruotName on them with max RAM.
+// Usage: run scan.js target
+//parameter target: exact name (case sensitive, maybe) to grow.
 
 let scriptName = "serverGrower.js";
 
@@ -10,6 +8,7 @@ export function autocomplete(data, args) {
     return [...data.servers];
 }
 
+/** @param {NS} ns **/
 function getTools(ns) {
     let ret = [];
     if (ns.fileExists('BruteSSH.exe', 'home')) {
@@ -30,6 +29,7 @@ function getTools(ns) {
     return ret;
 }
 
+/** @param {NS} ns **/
 function getRoot(ns, server, tools) {
     if (ns.hasRootAccess(server) == true) {
         // We already have root you dumbdumb.
@@ -72,6 +72,7 @@ function getRoot(ns, server, tools) {
     return true;
 }
 
+/** @param {NS} ns **/
 async function control(ns, server, tools) {
     if (getRoot(ns, server, tools) == false) {
         // No root, no scripts.
@@ -92,6 +93,7 @@ async function control(ns, server, tools) {
     }
 }
 
+/** @param {NS} ns **/
 export async function main(ns) {
     if (ns.args[0] == undefined) {
         ns.tprint("No target specified.");

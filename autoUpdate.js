@@ -1,7 +1,14 @@
-/** @param {NS} ns **/
+// Auto Updater (c) 2022 Tyrope
+// This script automatically updates all my *other* scripts
+// NOTE: DOESN'T UPDATE ITSELF!
+
 let repo = "https://raw.githubusercontent.com/tyrope/bitburner/master/";
 let timeOut = 1000 * 60 * 1; // One minute on the download timeouts.
 
+/** Download a file from the repo, making sure it's not running first.
+ * @param {NS} ns
+ * @param {String] fileName
+**/
 async function getFile(ns, fileName) {
     let timeStart = ns.getTimeSinceLastAug();
 
@@ -35,6 +42,7 @@ async function getFile(ns, fileName) {
     }
 }
 
+/** @param {NS} ns **/
 export async function main(ns) {
     ns.disableLog("sleep");
 
