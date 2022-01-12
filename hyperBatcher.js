@@ -1,0 +1,216 @@
+// Hyper Batcher (c) 2022 Tyrope
+// Usage: run hyperBatcher.js [target] (source) (percentage) (simulate)
+// Parameter target: The server to take money from.
+// Parameter source: The server to run the attack. (default: the server this runs on.)
+// Parameter percentage: Percentage of maxMoney to steal. (Default: 0.2)
+// Parameter simulate: If true, don't run scripts; print the expected results instead. (Default: false)
+
+export function autocomplete(data, args) {
+    return [...data.servers];
+}
+
+/** Calculate the amount of hack threads needed for a batch attack.
+ * @param {NS} ns
+ * @param {String} tgt      The hostname of the target server.
+ * @param {Number} moneyPct The percent of the target's maximum money we want to hack.
+ * @return {Number[]}       The amount of threads, hack duration, security increase, actual money hacked.
+ */
+function calcHack(ns, tgt, moneyPct) {
+    // Calculate the hack.
+    let maxMoney = ns.getServerMaxMoney(tgt);
+    if (moneyPct > 1) { moneyPct /= 100; }
+    let srv = ns.getServer(tgt);
+    srv.hackDifficulty = srv.minDifficulty;
+    srv.moneyAvailable = srv.moneyMax;
+    let p = ns.getPlayer();
+
+    let threads = Math.floor(moneyPct / ns.formulas.hacking.hackPercent(srv, p));
+    return [
+        threads,
+        ns.formulas.hacking.hackTime(srv, p),
+        ns.hackAnalyzeSecurity(threads),
+        ns.formulas.hacking.hackPercent(srv, p) * threads * maxMoney
+    ];
+}
+
+/** Calculate the amount of grow threads needed for a batch attack.
+ * @param {NS} ns
+ * @param {String} tgt The hostname of the target server.
+ * @param {Number} moneyPct The amount of money we've stolen.
+ * @return {Number[]}  The amount of threads, grow duration, security increase.
+ */
+function calcGrow(ns, tgt, moneyPct) {
+    let max = ns.getServerMaxMoney(tgt);
+    let regrow = Math.max(1, max / (max - moneyPct));
+    let srv = ns.getServer(tgt);
+    srv.hackDifficulty = srv.minDifficulty;
+    srv.moneyAvailable = srv.moneyMax - moneyPct;
+    let p = ns.getPlayer();
+    let threads = Math.ceil(Math.log(regrow) / Math.log(ns.formulas.hacking.growPercent(srv, 1, p)));
+    return [
+        threads,
+        ns.formulas.hacking.growTime(srv, p),
+        ns.growthAnalyzeSecurity(threads)
+    ];
+}
+
+/** Calculate the amount of weaken threads needed for a batch attack.
+ * @param {NS} ns
+ * @param {String} tgt        The hostname of the target server.
+ * @param {Number} secIncrase The amount of security we need to lower.
+ * @return {Number[]}         The amount of threads, weaken duration, security decrease.
+ */
+function calcWeaken(ns, tgt, secIncrease) {
+    // Calculate the weaken we need to counter hack.
+    let secEffect = 0;
+    let threads = 0;
+    while (secEffect < secIncrease) {
+        threads++;
+        secEffect = ns.weakenAnalyze(threads);
+    }
+    let srv = ns.getServer(tgt);
+    srv.hackDifficulty = srv.minDifficulty;
+    srv.moneyAvailable = srv.moneyMax;
+    let p = ns.getPlayer();
+
+    return [threads, ns.formulas.hacking.weakenTime(srv, p), secEffect];
+}
+
+/** Calculate the maximum amount of batches we can run based on server RAM
+ * @param  {String} runTimes The duration of all attacks (in ms); order: HWGW.
+ * @param  {String} delay    The delay between end times (in ms).
+ * @return {Number[]}        The start time of all attacks (in ms); order: HWGW.
+ */
+function calcDelays(runTimes, delay) {
+    return [
+        runTimes[1] - delay - runTimes[0],
+        0,
+        runTimes[1] + delay - runTimes[2],
+        delay * 2
+    ];
+}
+
+/** Calculates every batch we can feasibly start before the first hack lands.
+ * @param {Number} delay, the delay between landings.
+ * @param {Number[4]} runTimes, the runtime of each script.
+ */
+function calcBatches(delay, runTimes) {
+    // Calculate our delays.
+    const delays = calcDelays(runTimes, delay);
+    // We can run this many batches before the first hack lands.
+    const firstHackLand = delays[0] + runTimes[0];
+
+    // Get the start times.
+    let execs = Array();
+    let i = 0;
+    while (firstHackLand > delays[1] + delay * (4 * i)) {
+        execs.push([delays[0] + delay * (4 * i), 'H']);
+        execs.push([delays[1] + delay * (4 * i), 'Wh']);
+        execs.push([delays[2] + delay * (4 * i), 'G']);
+        execs.push([delays[3] + delay * (4 * i), 'Wg']);
+        i++;
+    }
+    return execs.sort((a, b) => a[0] - b[0]);
+}
+
+/** Run the batch hacks.
+ * @param {NS} ns
+ * @param {String} tgt        The server we're stealing money from.
+ * @param {String} src        The server running the hacks.
+ * @param {Number[4]} threads The amount of threads of the script types.
+ * @param {Array} execs       Array of [Number,String]; indicating delay and type of script.
+ * @param {Number} profit     The expected money to get per hack.
+**/
+async function startBatching(ns, tgt, src, threads, execs, firstLand, profit) {
+    ns.print(`Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${ns.tFormat(firstLand)}, yielding ${ns.nFormat(profit, "0.00a")}`);
+    const currLvl = ns.getHackingLevel;
+    const startLvl = currLvl();
+    const now = ns.getTimeSinceLastAug;
+    const batchStart = now();
+
+    // ensure the src server has the latest hacking scripts.
+    if (src != 'home') {
+        for (let file in ['/batch/hack.js', '/batch/grow.js', '/batch/weaken.js']) {
+            ns.print(`uploading ${file}`);
+            await ns.scp(file, 'home', src);
+        }
+    }
+
+    let script = ""; let t; let slept = 0;
+    for (let x of execs) {
+        if (currLvl() != startLvl) {
+            ns.print(`WARNING: Hack level increased, aborting hack.`);
+            return;
+        }
+        switch (x[1]) {
+            case "H":
+                script = "/batch/hack.js";
+                t = threads[0];
+                break;
+            case "G":
+                script = "/batch/grow.js";
+                t = threads[2];
+                break;
+            case "Wh":
+                script = "/batch/weaken.js";
+                t = threads[1];
+                break;
+            case "Wg":
+                script = "/batch/weaken.js";
+                t = threads[3];
+                break;
+        }
+
+        await ns.sleep(x[0] - slept);
+        slept = x[0] - slept;
+
+        if (Math.abs(slept - x[0]) > 1e4) {
+            ns.print(`WARNING: Drift detected, aborting hack.`);
+            return;
+        }
+        ns.print(`INFO: [T+${ns.tFormat(now() - batchStart, true)}]Launching ${x[1]}.`);
+        ns.exec(script, src, t, tgt, profit, now());
+    }
+}
+
+/** @param {NS} ns **/
+export async function main(ns) {
+    ns.clearLog();
+    ns.disableLog('ALL');
+    //Parameter parsing.
+    if (ns.args[0] == undefined) {
+        ns.tprint("ERROR: Invalid target.");
+        ns.tprint("INFO: Usage: target(string), source(string), percent(number, optional), simulate(boolean, optional).");
+        ns.exit();
+    }
+    const tgt = ns.args[0];
+    const src = ns.args[1] ? ns.args[1] : ns.getHostname();
+    const pct = ns.args[2] ? ns.args[2] : 0.2;
+    const sim = ns.args[3];
+
+    // Constants.
+    const delay = 100;
+
+    // Calculate the threads needed, runTimes and actual money hacked.
+    let threads = Array(4), runTimes = Array(4); let sec; let profit;
+    [threads[0], runTimes[0], sec, profit] = calcHack(ns, tgt, pct);
+    [threads[1], runTimes[1]] = calcWeaken(ns, tgt, sec);
+    [threads[2], runTimes[2], sec] = calcGrow(ns, tgt, profit);
+    [threads[3], runTimes[3]] = calcWeaken(ns, tgt, sec);
+
+    // If we're only simulating, we just got enough info.
+    if (sim) {
+        let ram =
+            ns.getScriptRam('/batch/hack.js') * threads[0] +
+            ns.getScriptRam('/batch/grow.js') * threads[2] +
+            ns.getScriptRam('/batch/weaken.js') * (threads[1] + threads[3]);
+        let time = runTimes[3] + delay * 2;
+        ns.tprint(`${src} -> ${tgt}, stealing \$${ns.nFormat(profit, "0.000a")} in ${ns.tFormat(time)} using ${ns.nFormat(ram * 1e9, "0.00b")} RAM`);
+        ns.tprint(`Threads: hack(${threads[0]}), weaken(${threads[1]}), grow(${threads[2]}), weaken(${threads[3]});`);
+        ns.exit();
+    }
+
+    let execs = calcBatches(delay, runTimes);
+    let time = execs.filter(x => x[1] == "H")[0][0];
+    await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit);
+}
