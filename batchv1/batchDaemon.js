@@ -134,9 +134,9 @@ function calcWeaken(ns, tgt, secIncrease, useFormula) {
 function calcBatches(ns, tgt, source, batches, threads) {
     // Calculate RAM.
     let ramUsed =
-        ns.getScriptRam('/batch/hack.js', source) * threads[0] +
-        ns.getScriptRam('/batch/weaken.js', source) * (threads[1] + threads[3]) +
-        ns.getScriptRam('/batch/grow.js', source) * threads[2];
+        ns.getScriptRam('/batchv1/hack.js', source) * threads[0] +
+        ns.getScriptRam('/batchv1/weaken.js', source) * (threads[1] + threads[3]) +
+        ns.getScriptRam('/batchv1/grow.js', source) * threads[2];
 
     // get the max batches we can run for this server.
     let maxBatches = Math.floor((ns.getServerMaxRam(source) - ns.getServerUsedRam(source)) / ramUsed);
@@ -194,9 +194,9 @@ export function getBatchInfo(ns, tgt, percent, canSim) {
     threads[3] = calc[0];
 
     return ([
-        ns.getScriptRam('/batch/hack.js', "home") * threads[0] +
-        ns.getScriptRam('/batch/grow.js', "home") * threads[2] +
-        ns.getScriptRam('/batch/weaken.js', "home") * (threads[1] + threads[3]),
+        ns.getScriptRam('/batchv1/hack.js', "home") * threads[0] +
+        ns.getScriptRam('/batchv1/grow.js', "home") * threads[2] +
+        ns.getScriptRam('/batchv1/weaken.js', "home") * (threads[1] + threads[3]),
         calc[1],
         moneyPct
     ]);
@@ -256,7 +256,7 @@ export async function main(ns) {
 
     // Ensure the source server has the latest version of the batchfiles.
     for (let file of ["hack", "grow", "weaken"]) {
-        await ns.scp(`/batch/${file}.js`, "home", source);
+        await ns.scp(`/batchv1/${file}.js`, "home", source);
     }
 
     // Get the max amount of Batches we're allowed to run.
@@ -267,10 +267,10 @@ export async function main(ns) {
 
     if (simulate) {
         let ram = [
-            ns.getScriptRam('/batch/hack.js', source) * threads[0],
-            ns.getScriptRam('/batch/weaken.js', source) * threads[1],
-            ns.getScriptRam('/batch/grow.js', source) * threads[2],
-            ns.getScriptRam('/batch/weaken.js', source) * threads[3]
+            ns.getScriptRam('/batchv1/hack.js', source) * threads[0],
+            ns.getScriptRam('/batchv1/weaken.js', source) * threads[1],
+            ns.getScriptRam('/batchv1/grow.js', source) * threads[2],
+            ns.getScriptRam('/batchv1/weaken.js', source) * threads[3]
         ];
 
         if (batches == 0) {
@@ -289,10 +289,10 @@ export async function main(ns) {
         ns.tprint(`INFO: ${source} running ${batches} batches against ${tgt}.`);
         let batchStart = ns.getTimeSinceLastAug() + delay;
         for (let i = 0; i < batches; i++) {
-            ns.exec('/batch/hack.js', source, threads[0], tgt, batchStart + startTimes[0], moneyPct);
-            ns.exec('/batch/weaken.js', source, threads[1], tgt, batchStart + startTimes[1]);
-            ns.exec('/batch/grow.js', source, threads[2], tgt, batchStart + startTimes[2]);
-            ns.exec('/batch/weaken.js', source, threads[3], tgt, batchStart + startTimes[3]);
+            ns.exec('/batchv1/hack.js', source, threads[0], tgt, batchStart + startTimes[0], moneyPct);
+            ns.exec('/batchv1/weaken.js', source, threads[1], tgt, batchStart + startTimes[1]);
+            ns.exec('/batchv1/grow.js', source, threads[2], tgt, batchStart + startTimes[2]);
+            ns.exec('/batchv1/weaken.js', source, threads[3], tgt, batchStart + startTimes[3]);
             batchStart += delay * 4;
         }
     }

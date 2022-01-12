@@ -1,8 +1,8 @@
-batch/grow.js
-batch/hack.js
-batch/weaken.js
+batchv1/batchDaemon.js
+batchv1/grow.js
+batchv1/hack.js
+batchv1/weaken.js
 lib/tableMaker.js
-batchDaemon.js
 findHackable.js
 gradeServers.js
 hacknetIdler.js

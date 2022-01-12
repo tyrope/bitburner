@@ -1,5 +1,5 @@
 import { makeTable } from 'lib/tableMaker.js'
-import { getBatchInfo } from 'batchDaemon.js'
+import { getBatchInfo } from 'batchv1/batchDaemon.js'
 /** @param {NS} ns **/
 export async function main(ns) {
     ns.disableLog('ALL');
