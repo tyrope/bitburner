@@ -217,6 +217,8 @@ export async function main(ns) {
     let runTimes = [];
     let threads = [];
 
+    ns.disableLog('exec');
+
     // TODO: Better argument parsing.
     if (ns.args[1] == undefined) {
         ns.tprint("Usage: target: string, moneyPercent: number, simulate?: boolean, source?: string, batches?: number, delay?: number");
@@ -231,7 +233,9 @@ export async function main(ns) {
     let delay = ns.args[5] ? ns.args[5] : 200;
 
     // Ensure the server is prepped.
-    await checkServerPrep(ns, tgt, source);
+    if (!simulate) {
+        await checkServerPrep(ns, tgt, source);
+    }
 
     // Calculate the hacking threads.
     let calc = calcHack(ns, tgt, moneyPct, simulate);
@@ -250,11 +254,9 @@ export async function main(ns) {
     calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]), simulate);
     threads.push(calc[0]); runTimes.push(calc[1]);
 
-    // Ensure the source server has the files.
+    // Ensure the source server has the latest version of the batchfiles.
     for (let file of ["hack", "grow", "weaken"]) {
-        if (!ns.fileExists(`/batch/${file}.js`, source)) {
-            await ns.scp(`/batch/${file}.js`, "home", source);
-        }
+        await ns.scp(`/batch/${file}.js`, "home", source);
     }
 
     // Get the max amount of Batches we're allowed to run.
