@@ -5,7 +5,6 @@ batchv1/weaken.js
 lib/format.js
 lib/tableMaker.js
 bigBrother.js
-findHackable.js
 gradeServers.js
 hacknetIdler.js
 scan.js
