@@ -13,7 +13,7 @@ export async function main(ns) {
     ns.tail();
 
     let pct = ns.args[0] ? ns.args[0] : 20;
-    let verbose = ns.args[1] ? ns.args[0] : false;
+    let verbose = ns.args[1] ? ns.args[1] : false;
     let topOnly = ns.args[2] ? ns.args[2] + 1 : Infinity;
 
     // Get all the servers.
@@ -75,7 +75,7 @@ function getServerScore(ns, server, pct) {
  * @return {Object[]} The server's information.
 **/
 function getServerInfo(ns, srv, pct, verbose) {
-    let batchInfo = getBatchInfo(ns, srv.hostname, pct);
+    let batchInfo = getBatchInfo(ns, srv, pct);
     let chanceToHack = ns.formulas.hacking.hackChance(srv, ns.getPlayer());
     if (verbose) {
         return ([
