@@ -1,9 +1,12 @@
 // Hyper Batcher (c) 2022 Tyrope
-// Usage: run hyperBatcher.js [target] (source) (percentage) (simulate)
+// Usage: run hyperBatcher.js [target] (source) (verbose) (percentage) (simulate)
 // Parameter target: The server to take money from.
 // Parameter source: The server to run the attack. (default: the server this runs on.)
+// Parameter verbose: If true, we print every script launch to the log. (default: false)
 // Parameter percentage: Percentage of maxMoney to steal. (Default: 0.2)
 // Parameter simulate: If true, don't run scripts; print the expected results instead. (Default: false)
+
+import { timeFormat } from '/lib/format.js';
 
 export function autocomplete(data, args) {
     return [...data.servers];
@@ -120,9 +123,10 @@ function calcBatches(delay, runTimes) {
  * @param {Number[4]} threads The amount of threads of the script types.
  * @param {Array} execs       Array of [Number,String]; indicating delay and type of script.
  * @param {Number} profit     The expected money to get per hack.
+ * @return {Boolean}          Whether or not we need to recalculate threads due to level-up.
 **/
-async function startBatching(ns, tgt, src, threads, execs, firstLand, profit) {
-    ns.print(`Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${ns.tFormat(firstLand)}, yielding ${ns.nFormat(profit, "0.00a")}`);
+async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, verbose) {
+    ns.print(`Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, firstLand)}, yielding ${ns.nFormat(profit, "0.00a")}`);
     const currLvl = ns.getHackingLevel;
     const startLvl = currLvl();
     const now = ns.getTimeSinceLastAug;
@@ -130,7 +134,7 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit) {
 
     // ensure the src server has the latest hacking scripts.
     if (src != 'home') {
-        for (let file in ['/batch/hack.js', '/batch/grow.js', '/batch/weaken.js']) {
+        for (let file of ['/batch/hack.js', '/batch/grow.js', '/batch/weaken.js']) {
             ns.print(`uploading ${file}`);
             await ns.scp(file, 'home', src);
         }
@@ -140,7 +144,7 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit) {
     for (let x of execs) {
         if (currLvl() != startLvl) {
             ns.print(`WARNING: Hack level increased, aborting hack.`);
-            return;
+            return true;
         }
         switch (x[1]) {
             case "H":
@@ -162,15 +166,32 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit) {
         }
 
         await ns.sleep(x[0] - slept);
-        slept = x[0] - slept;
+        slept = x[0];
 
-        if (Math.abs(slept - x[0]) > 1e4) {
-            ns.print(`WARNING: Drift detected, aborting hack.`);
-            return;
+        if (Math.abs(slept - x[0]) > 0.2) {
+            ns.print(`WARNING: Aborting hack due to drift. Expected slept: ${x[0]}, actual: ${slept} (${Math.abs(slept - x[0])} drift)`);
+            return false;
         }
-        ns.print(`INFO: [T+${ns.tFormat(now() - batchStart, true)}]Launching ${x[1]}.`);
+        if (verbose) {
+            ns.print(`INFO: [T+${timeFormat(ns, now() - batchStart, true)}]Launching ${x[1]}.`);
+        }
         ns.exec(script, src, t, tgt, profit, now());
     }
+}
+
+/** Calculate the threads needed to hack tgt for pct% of maxMoney.
+ * @param  {String} tgt Server hostname to attack.
+ * @param  {Number} pct Percentage of maxMoney we want to steal.
+ * @return {Object[3]}  Threads required, Script runtimes, money hacked per batch.
+ */
+function calcThreads(ns, tgt, pct) {
+    let threads = Array(4), runTimes = Array(4); let sec; let profit;
+    [threads[0], runTimes[0], sec, profit] = calcHack(ns, tgt, pct);
+    [threads[1], runTimes[1]] = calcWeaken(ns, tgt, sec);
+    [threads[2], runTimes[2], sec] = calcGrow(ns, tgt, profit);
+    [threads[3], runTimes[3]] = calcWeaken(ns, tgt, sec);
+
+    return [threads, runTimes, profit];
 }
 
 /** @param {NS} ns **/
@@ -180,23 +201,21 @@ export async function main(ns) {
     //Parameter parsing.
     if (ns.args[0] == undefined) {
         ns.tprint("ERROR: Invalid target.");
-        ns.tprint("INFO: Usage: target(string), source(string), percent(number, optional), simulate(boolean, optional).");
+        ns.tprint("INFO: Usage: target(string), source(string), verbose(boolean, optional), percent(number, optional), simulate(boolean, optional).");
         ns.exit();
     }
     const tgt = ns.args[0];
     const src = ns.args[1] ? ns.args[1] : ns.getHostname();
-    const pct = ns.args[2] ? ns.args[2] : 0.2;
-    const sim = ns.args[3];
+    const verbose = ns.args[2] ? ns.args[2] : false;
+    const pct = ns.args[3] ? ns.args[3] : 0.2;
+    const sim = ns.args[4];
 
     // Constants.
     const delay = 100;
 
     // Calculate the threads needed, runTimes and actual money hacked.
-    let threads = Array(4), runTimes = Array(4); let sec; let profit;
-    [threads[0], runTimes[0], sec, profit] = calcHack(ns, tgt, pct);
-    [threads[1], runTimes[1]] = calcWeaken(ns, tgt, sec);
-    [threads[2], runTimes[2], sec] = calcGrow(ns, tgt, profit);
-    [threads[3], runTimes[3]] = calcWeaken(ns, tgt, sec);
+    let threads, runTimes, profit;
+    [threads, runTimes, profit] = calcThreads(ns, tgt, pct);
 
     // If we're only simulating, we just got enough info.
     if (sim) {
@@ -210,7 +229,14 @@ export async function main(ns) {
         ns.exit();
     }
 
-    let execs = calcBatches(delay, runTimes);
-    let time = execs.filter(x => x[1] == "H")[0][0];
-    await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit);
+    let recalc = false;
+    while (true) {
+        if (recalc) {
+            [threads, runTimes, profit] = calcThreads(ns, tgt, pct);
+            recalc = false;
+        }
+        let execs = calcBatches(delay, runTimes);
+        let time = execs.filter(x => x[1] == "H")[0][0];
+        reCalc = await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit, verbose);
+    }
 }
