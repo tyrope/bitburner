@@ -128,14 +128,6 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
     const now = ns.getTimeSinceLastAug;
     const batchStart = now();
 
-    // ensure the src server has the latest hacking scripts.
-    if (src != 'home') {
-        for (let file of ['/batch/hack.js', '/batch/grow.js', '/batch/weaken.js']) {
-            ns.print(`uploading ${file}`);
-            await ns.scp(file, 'home', src);
-        }
-    }
-
     let script = ""; let t; let slept = 0;
     for (let x of execs) {
         if (currLvl() != startLvl) {
@@ -225,6 +217,14 @@ export async function main(ns) {
         ns.exit();
     }
 
+    // ensure the src server has the latest hacking scripts.
+    if (src != 'home') {
+        for (let file of ['/batch/hack.js', '/batch/grow.js', '/batch/weaken.js']) {
+            ns.print(`uploading ${file}`);
+            await ns.scp(file, 'home', src);
+        }
+    }
+
     let recalc = false;
     while (true) {
         if (recalc) {
@@ -233,7 +233,7 @@ export async function main(ns) {
         }
         let execs = calcBatches(delay, runTimes);
         let time = execs.filter(x => x[1] == "H")[0][0];
-        reCalc = await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit, verbose);
+        recalc = await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit, verbose);
     }
 }
 
