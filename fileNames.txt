@@ -2,6 +2,7 @@ batchv1/batchDaemon.js
 batchv1/grow.js
 batchv1/hack.js
 batchv1/weaken.js
+lib/format.js
 lib/tableMaker.js
 bigBrother.js
 findHackable.js
