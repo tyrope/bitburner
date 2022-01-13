@@ -66,11 +66,7 @@ function calcGrow(ns, tgt, moneyPct) {
 function calcWeaken(ns, tgt, secIncrease) {
     // Calculate the weaken we need to counter hack.
     let secEffect = 0;
-    let threads = 0;
-    while (secEffect < secIncrease) {
-        threads++;
-        secEffect = ns.weakenAnalyze(threads);
-    }
+    let threads = Math.ceil(secIncrease / ns.weakenAnalyze(1));
     let srv = ns.getServer(tgt);
     srv.hackDifficulty = srv.minDifficulty;
     srv.moneyAvailable = srv.moneyMax;
