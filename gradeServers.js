@@ -68,7 +68,7 @@ function getServerScore(ns, server, pct) {
 
 /** Get all the data of 1 server.
  * @param {NS} ns
- * @param {Server} srv          Server to score.
+ * @param {String} srv          Server to score.
  * @param {Number} pct          Percentage of maxMoney to hack.
  * @param {Boolean} verbose     If true, add a whole bunch of extra values.
  * @param {Boolean} useFormulas If true, use formulas to maxMoney/minSec. If false, live data.
@@ -76,22 +76,22 @@ function getServerScore(ns, server, pct) {
 **/
 function getServerInfo(ns, srv, pct, verbose) {
     let batchInfo = getBatchInfo(ns, srv, pct);
-    let chanceToHack = ns.formulas.hacking.hackChance(srv, ns.getPlayer());
+    let chanceToHack = ns.formulas.hacking.hackChance(ns.getServer(srv), ns.getPlayer());
     if (verbose) {
         return ([
-            srv.hostname,
-            ns.nFormat(srv.maxMoney, "0.00a"),
-            srv.growth,
-            ns.getServerMinSecurityLevel(srv.hostname),
+            srv,
+            ns.nFormat(ns.getServerMaxMoney(srv), "0.00a"),
+            ns.getServerGrowth(srv),
+            ns.getServerMinSecurityLevel(srv),
             `${ns.nFormat(chanceToHack * 100, "0.00")}%`,
-            `${ns.nFormat(srv.maxMoney * srv.growth, "0.00a")}`,
+            `${ns.nFormat(ns.getServerMaxMoney(srv) * ns.getServerGrowth(srv), "0.00a")}`,
             ns.nFormat(batchInfo[2] / batchInfo[1], "0.00a"),
             ns.nFormat(batchInfo[0] * 1e9, "0.00b"),
             ns.nFormat(getServerScore(ns, srv, pct), "0.000")
         ]);
     } else {
         return ([
-            srv.hostname,
+            srv,
             ns.nFormat(batchInfo[2] / batchInfo[1], "0.000a"),
             ns.nFormat(batchInfo[0] * 1e9, "0.00b"),
             ns.nFormat(getServerScore(ns, srv, pct), "0.000")

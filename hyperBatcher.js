@@ -39,15 +39,15 @@ function calcHack(ns, tgt, moneyPct) {
 /** Calculate the amount of grow threads needed for a batch attack.
  * @param {NS} ns
  * @param {String} tgt The hostname of the target server.
- * @param {Number} moneyPct The amount of money we've stolen.
+ * @param {Number} money The amount of money we've stolen.
  * @return {Number[]}  The amount of threads, grow duration, security increase.
  */
-function calcGrow(ns, tgt, moneyPct) {
+function calcGrow(ns, tgt, money) {
     let max = ns.getServerMaxMoney(tgt);
-    let regrow = Math.max(1, max / (max - moneyPct));
+    let regrow = Math.max(1, max / (max - money));
     let srv = ns.getServer(tgt);
     srv.hackDifficulty = srv.minDifficulty;
-    srv.moneyAvailable = srv.moneyMax - moneyPct;
+    srv.moneyAvailable = srv.moneyMax - money;
     let p = ns.getPlayer();
     let threads = Math.ceil(Math.log(regrow) / Math.log(ns.formulas.hacking.growPercent(srv, 1, p)));
     return [
@@ -244,14 +244,15 @@ export async function main(ns) {
  * @return {number[]} [RAM Usage, Time in ms, hacked money.]
  */
 export function getBatchInfo(ns, tgt, percent) {
-    let pct = calcHack(ns, tgt, percent)[3];
-    let threads = calcThreads(ns, tgt, pct);
-    let time = calcWeaken(ns, tgt, calcGrow(ns, tgt, pct)[2]) + 200;
+    let profit = calcHack(ns, tgt, percent)[3];
+    percent = profit / ns.getServerMaxMoney(tgt);
+    let threads = calcThreads(ns, tgt, percent)[0];
+    let time = calcWeaken(ns, tgt, calcGrow(ns, tgt, profit)[2])[1] + 200;
     return ([
         ns.getScriptRam('/batch/hack.js', "home") * threads[0] +
         ns.getScriptRam('/batch/grow.js', "home") * threads[2] +
         ns.getScriptRam('/batch/weaken.js', "home") * (threads[1] + threads[3]),
         time,
-        pct
+        profit
     ]);
 }
