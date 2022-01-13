@@ -161,14 +161,17 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
                 break;
         }
 
+        if (x[0] - slept < 0) {
+            ns.print(`ERROR: Trying to sleep a negative amount. We've fallen behind!`);
+            return true;
+        }
         await ns.sleep(x[0] - slept);
         slept = x[0];
 
-        // TODO: If we're too fast, we don't need to abort, just sleep a little longer.
-        if (Math.abs((now - x[0]) - batchStart) > 0.2) {
-            ns.print(`WARNING: Aborting hack due to drift. Expected slept: ${x[0]}, actual: ${slept} (${Math.abs(slept - x[0])} drift)`);
+        /*if (Math.abs(slept - (now() - batchStart)) > 0.2) {
+            ns.print(`WARNING: Aborting script(${x[1]}) due to drift. Expected slept: ${x[0]}, actual: ${now() - batchStart} (${Math.abs((now() - batchStart) - x[0])} drift)`);
             return false;
-        }
+        }*/
 
         // Ensure we're not bumping into RAM limitations
         if (ns.getServerMaxRam(src) - ns.getServerUsedRam(src) < ns.getScriptRam(script, src)) {
