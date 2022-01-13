@@ -135,20 +135,12 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
             return true;
         }
         // Check if an abort has been called.
-        if (ns.fileExists("ABORT.txt", src)) {
+        if (ns.fileExists(`ABORT_${tgt}.txt`, src)) {
             // Check if this is for our target
-            await ns.scp("ABORT.txt", src, ns.getHostname());
-            if (ns.read("ABORT.txt") == tgt) {
-                // Alert.
-                ns.print(`ERROR: ABORT received from hack.js.`);
-
-                // Wipe the message.
-                ns.rm("ABORT.txt", tgt);
-                ns.rm("ABORT.txt");
-
-                // Abort.
-                return true;
-            }
+            ns.print(`ERROR: ABORT received from hack.js.`);
+            ns.rm(`ABORT_${tgt}.txt`, src);
+            // Abort.
+            return true;
         }
         switch (x[1]) {
             case "H":

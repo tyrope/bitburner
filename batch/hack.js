@@ -23,7 +23,7 @@ export async function main(ns) {
                 ns.toast(`${ns.getHostname()} overhacked ${ns.args[0]} by \$${ns.nFormat((profit / expProfit) * 100 - 100, "0.00%")}`, 'warning');
             }
         }
-        ns.write('ABORT.txt', ns.args[0], 'w');
+        ns.write(`ABORT_${ns.args[0]}.txt`, "", 'w');
     } else if (verbose) {
         // success!
         ns.toast(`Hacked \$${ns.nFormat(profit, "0.000a")} from ${ns.args[0]}`, 'success');
