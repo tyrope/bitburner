@@ -29,6 +29,6 @@ export async function main(ns) {
             ]);
         }
         ns.print("\n" + makeTable(serverData));
-        await ns.sleep(1);
+        await ns.sleep(1000);
     }
 }
