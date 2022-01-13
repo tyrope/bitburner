@@ -5,7 +5,7 @@
 // Parameter topOnly: If given a number, will limit the amount of servers to only the top n. (default: Infinity)
 
 import { makeTable } from 'lib/tableMaker.js'
-import { getBatchInfo } from 'batchv1/batchDaemon.js'
+import { getBatchInfo } from 'hyperBatcher.js'
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -15,8 +15,6 @@ export async function main(ns) {
     let pct = ns.args[0] ? ns.args[0] : 20;
     let verbose = ns.args[1] ? ns.args[0] : false;
     let topOnly = ns.args[2] ? ns.args[2] + 1 : Infinity;
-
-    let useFormulas = ns.fileExists("Formulas.exe", "home");
 
     // Get all the servers.
     let servers = scanServers(ns);
@@ -32,7 +30,7 @@ export async function main(ns) {
     });
 
     // Sort by score.
-    servers.sort((a, b) => { return getServerScore(ns, b, pct, useFormulas) - getServerScore(ns, a, pct, useFormulas); });
+    servers.sort((a, b) => { return getServerScore(ns, b, pct) - getServerScore(ns, a, pct); });
 
     let data;
     if (verbose) {
@@ -45,7 +43,7 @@ export async function main(ns) {
         if (data.length >= topOnly) {
             break;
         }
-        data.push(getServerInfo(ns, server, pct, verbose, useFormulas));
+        data.push(getServerInfo(ns, server, pct, verbose));
     }
     ns.print(makeTable(data, false));
 }
@@ -57,60 +55,46 @@ export async function main(ns) {
  * @param {Boolean} useFormulas If true, use formulas to maxMoney/minSec. If false, live data.
  * @return {Number} The server's score.
 **/
-function getServerScore(ns, server, pct, useFormulas) {
+function getServerScore(ns, server, pct) {
     let chanceToHack;
-    if (useFormulas) {
-        let srv = ns.getServer(server);
-        srv.hackDifficulty = srv.minDifficulty;
-        srv.moneyAvailable = srv.moneyMax;
-        chanceToHack = ns.formulas.hacking.hackChance(srv, ns.getPlayer());
-    } else {
-        chanceToHack = ns.hackAnalyzeChance(server);
-    }
-    let batchInfo = getBatchInfo(ns, server, pct, useFormulas);
+    let srv = ns.getServer(server);
+    srv.hackDifficulty = srv.minDifficulty;
+    srv.moneyAvailable = srv.moneyMax;
+    chanceToHack = ns.formulas.hacking.hackChance(srv, ns.getPlayer());
+    let batchInfo = getBatchInfo(ns, server, pct);
     let moneyPerSec = batchInfo[2] / batchInfo[1];
     return (moneyPerSec * chanceToHack) / (batchInfo[0] * 0.25);
 }
 
 /** Get all the data of 1 server.
  * @param {NS} ns
- * @param {String} server       Server to score.
+ * @param {Server} srv          Server to score.
  * @param {Number} pct          Percentage of maxMoney to hack.
  * @param {Boolean} verbose     If true, add a whole bunch of extra values.
  * @param {Boolean} useFormulas If true, use formulas to maxMoney/minSec. If false, live data.
  * @return {Object[]} The server's information.
 **/
-function getServerInfo(ns, server, pct, verbose, useFormulas) {
-    let batchInfo = getBatchInfo(ns, server, pct, useFormulas);
+function getServerInfo(ns, srv, pct, verbose) {
+    let batchInfo = getBatchInfo(ns, srv.hostname, pct);
+    let chanceToHack = ns.formulas.hacking.hackChance(srv, ns.getPlayer());
     if (verbose) {
-        let maxMoney = ns.getServerMaxMoney(server);
-        let growth = ns.getServerGrowth(server);
-        let chanceToHack;
-        if (useFormulas) {
-            let srv = ns.getServer(server);
-            srv.hackDifficulty = srv.minDifficulty;
-            srv.moneyAvailable = srv.moneyMax;
-            chanceToHack = ns.formulas.hacking.hackChance(srv, ns.getPlayer());
-        } else {
-            chanceToHack = ns.hackAnalyzeChance(server);
-        }
         return ([
-            server,
-            ns.nFormat(maxMoney, "0.00a"),
-            growth,
-            ns.getServerMinSecurityLevel(server),
+            srv.hostname,
+            ns.nFormat(srv.maxMoney, "0.00a"),
+            srv.growth,
+            ns.getServerMinSecurityLevel(srv.hostname),
             `${ns.nFormat(chanceToHack * 100, "0.00")}%`,
-            `${ns.nFormat(maxMoney * growth, "0.00a")}`,
+            `${ns.nFormat(srv.maxMoney * srv.growth, "0.00a")}`,
             ns.nFormat(batchInfo[2] / batchInfo[1], "0.00a"),
             ns.nFormat(batchInfo[0] * 1e9, "0.00b"),
-            ns.nFormat(getServerScore(ns, server, pct, useFormulas), "0.000")
+            ns.nFormat(getServerScore(ns, srv, pct), "0.000")
         ]);
     } else {
         return ([
-            server,
+            srv.hostname,
             ns.nFormat(batchInfo[2] / batchInfo[1], "0.000a"),
             ns.nFormat(batchInfo[0] * 1e9, "0.00b"),
-            ns.nFormat(getServerScore(ns, server, pct, useFormulas), "0.000")
+            ns.nFormat(getServerScore(ns, srv, pct), "0.000")
         ]);
     }
 }

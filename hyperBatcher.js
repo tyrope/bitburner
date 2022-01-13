@@ -240,3 +240,22 @@ export async function main(ns) {
         reCalc = await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit, verbose);
     }
 }
+
+/**Returns information about a percent% batch hack against tgt (Used in gradeServers.js)
+ * @params {NS} ns
+ * @params {String} tgt Target server
+ * @params {number} percent decimal-represented money percentage
+ * @return {number[]} [RAM Usage, Time in ms, hacked money.]
+ */
+export function getBatchInfo(ns, tgt, percent) {
+    let pct = calcHack(ns, tgt, percent)[3];
+    let threads = calcThreads(ns, tgt, pct);
+    let time = calcWeaken(ns, tgt, calcGrow(ns, tgt, pct)[2]) + 200;
+    return ([
+        ns.getScriptRam('/batch/hack.js', "home") * threads[0] +
+        ns.getScriptRam('/batch/grow.js', "home") * threads[2] +
+        ns.getScriptRam('/batch/weaken.js', "home") * (threads[1] + threads[3]),
+        time,
+        pct
+    ]);
+}
