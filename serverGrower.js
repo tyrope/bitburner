@@ -10,7 +10,7 @@ export function autocomplete(data, args) {
 export async function main(ns) {
     let tgt = "";
     if (ns.args[0] == undefined) {
-        tprint("No target specified.");
+        ns.tprint("No target specified.");
         ns.exit();
     } else {
         tgt = ns.args[0];
