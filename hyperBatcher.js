@@ -156,7 +156,8 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
         await ns.sleep(x[0] - slept);
         slept = x[0];
 
-        if (Math.abs(slept - x[0]) > 0.2) {
+        // TODO: If we're too fast, we don't need to abort, just sleep a little longer.
+        if (Math.abs((now - x[0]) - batchStart) > 0.2) {
             ns.print(`WARNING: Aborting hack due to drift. Expected slept: ${x[0]}, actual: ${slept} (${Math.abs(slept - x[0])} drift)`);
             return false;
         }
