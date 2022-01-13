@@ -134,6 +134,22 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
             ns.print(`WARNING: Hack level increased, aborting hack.`);
             return true;
         }
+        // Check if an abort has been called.
+        if (ns.fileExists("ABORT.txt", src)) {
+            // Check if this is for our target
+            await ns.scp("ABORT.txt", src, ns.getHostname());
+            if (ns.read("ABORT.txt") == tgt) {
+                // Alert.
+                ns.print(`ERROR: ABORT received from hack.js.`);
+
+                // Wipe the message.
+                ns.rm("ABORT.txt", tgt);
+                ns.rm("ABORT.txt");
+
+                // Abort.
+                return true;
+            }
+        }
         switch (x[1]) {
             case "H":
                 script = "/batch/hack.js";
@@ -171,7 +187,7 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
         if (verbose) {
             ns.print(`INFO: [T+${timeFormat(ns, now() - batchStart, true)}]Launching ${x[1]}.`);
         }
-        ns.exec(script, src, t, tgt, profit, now());
+        ns.exec(script, src, t, tgt, profit, verbose, now());
     }
 }
 
