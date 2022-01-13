@@ -161,6 +161,13 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
             ns.print(`WARNING: Aborting hack due to drift. Expected slept: ${x[0]}, actual: ${slept} (${Math.abs(slept - x[0])} drift)`);
             return false;
         }
+
+        // Ensure we're not bumping into RAM limitations
+        if (ns.getServerMaxRam(srv) - ns.getServerUsedRam(srv) < ns.getScriptRam(script, src)) {
+            ns.print(`ERROR: Aborting, out of RAM.`);
+            return false;
+        }
+
         if (verbose) {
             ns.print(`INFO: [T+${timeFormat(ns, now() - batchStart, true)}]Launching ${x[1]}.`);
         }
