@@ -100,6 +100,8 @@ export async function main(ns) {
         ns.exit();
     }
 
+    // TODO: Allow for blacklisting.
+
     let scanned = []; // List of all the scanned servers.
     let frontier = ["home"]; // List of the servers we're going to scan.
     let todo; // Current server we're scanning.
