@@ -260,6 +260,9 @@ export async function main(ns) {
     let recalc = false;
     while (true) {
         if (recalc) {
+            if (ns.getHostname() == src) {
+                ns.tprint(`FAIL: [${src}]Recalc is telling us to killall, but we're hacking from the dispatcher.`);
+            }
             ns.killall(src);
             [threads, runTimes, profit] = calcThreads(ns, tgt, pct);
             recalc = false;
