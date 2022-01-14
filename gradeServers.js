@@ -4,7 +4,7 @@
 // Parameter verbose: If true, widens the table with a bunch of extra values. (default: false)
 // Parameter topOnly: If given a number, will limit the amount of servers to only the top n. (default: Infinity)
 
-import { makeTable } from 'lib/tableMaker.js'
+import { makeTable } from '/lib/tableMaker.js'
 import { getBatchInfo } from 'hyperBatcher.js'
 
 /** @param {NS} ns **/
