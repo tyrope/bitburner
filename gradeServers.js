@@ -31,7 +31,7 @@ export async function main(ns) {
     // Sort by score.
     servers.sort((a, b) => { return getServerScore(ns, b, pct) - getServerScore(ns, a, pct); });
 
-    let data = [["SERVER", "Max $", "%h", "$/s", "RAM/b", "tB", "RAM", "Score"]];
+    let data = [["SERVER", "Max $", "%h", "$/s", "RAM", "batchtime", "Score"]];
 
     for (let server of servers) {
         if (data.length >= topOnly) {
