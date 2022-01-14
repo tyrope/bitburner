@@ -249,12 +249,15 @@ export async function main(ns) {
     let recalc = false;
     while (true) {
         if (recalc) {
+            ns.killall(src);
             [threads, runTimes, profit] = calcThreads(ns, tgt, pct);
             recalc = false;
         }
         let execs = calcBatches(delay, runTimes);
         let time = execs.filter(x => x[1] == "H")[0][0];
         recalc = await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit, verbose);
+        // If a batch fails, make sure we let it fully run out.
+        await ns.sleep(runTimes[1] + delay * 2);
     }
 }
 
