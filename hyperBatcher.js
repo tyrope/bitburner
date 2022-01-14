@@ -141,13 +141,13 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
     let script = ""; let t; let slept = 0;
     for (let x of execs) {
         if (currLvl() != startLvl) {
-            ns.print(`WARNING: Hack level increased, aborting hack.`);
+            ns.print(`WARNING: [T+${now() - batchStart}]Hack level increased, aborting hack.`);
             return true;
         }
         // Check if an abort has been called.
         if (ns.fileExists(`ABORT_${tgt}.txt`, src)) {
             // Check if this is for our target
-            ns.print(`ERROR: ABORT received from hack.js.`);
+            ns.print(`ERROR: [T+${now() - batchStart}]ABORT received from hack.js.`);
             ns.rm(`ABORT_${tgt}.txt`, src);
             // Abort.
             return true;
@@ -172,7 +172,7 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
         }
 
         if (x[0] - slept < 0) {
-            ns.print(`ERROR: Trying to sleep a negative amount. We've fallen behind!`);
+            ns.print(`ERROR: [T+${now() - batchStart}]Trying to sleep a negative amount. We've fallen behind!`);
             return true;
         }
         await ns.sleep(x[0] - slept);
@@ -185,7 +185,7 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
 
         // Ensure we're not bumping into RAM limitations
         if (ns.getServerMaxRam(src) - ns.getServerUsedRam(src) < ns.getScriptRam(script, src)) {
-            ns.print(`ERROR: Aborting, out of RAM.`);
+            ns.print(`ERROR: [T+${now() - batchStart}]Aborting, out of RAM.`);
             return true;
         }
         ns.exec(script, src, t, tgt, profit, verbose, now());
