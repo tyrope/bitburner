@@ -90,19 +90,29 @@ function calcDelays(runTimes, delay) {
 }
 
 /** Calculates every batch we can feasibly start before the first hack lands.
- * @param {Number} delay, the delay between landings.
- * @param {Number[4]} runTimes, the runtime of each script.
+ * @param {NS} ns
+ * @param {Number} delay       the delay between landings.
+ * @param {Number[4]} runTimes the runtime of each script.
+ * @param {Number[4]} threads  the number of threads for each script.
+ * @param {String} src         the hostname of the server launching the attack.
  */
-function calcBatches(delay, runTimes) {
+function calcBatches(ns, delay, runTimes, threads, src) {
     // Calculate our delays.
     const delays = calcDelays(runTimes, delay);
     // We can run this many batches before the first hack lands.
     const firstHackLand = delays[0] + runTimes[0];
+    // we can run this many batches before RAM runs out.
+    let ramUse =
+        ns.getScriptRam('/batch/hack.js', src) * threads[0] +
+        ns.getScriptRam('/batch/grow.js', src) * threads[2] +
+        ns.getScriptRam('/batch/weaken.js', src) * (threads[1] + threads[3]);
+    // This will break if multiple batchers are running.
+    let maxBatches = ns.getServerMaxRam(src) - ns.getServerUsedRam(src);
 
     // Get the start times.
     let execs = Array();
     let i = 0;
-    while (firstHackLand > delays[1] + delay * (4 * i)) {
+    while (maxBatches > i && firstHackLand > delays[1] + delay * (4 * i)) {
         execs.push([delays[0] + delay * (4 * i), 'H']);
         execs.push([delays[1] + delay * (4 * i), 'Wh']);
         execs.push([delays[2] + delay * (4 * i), 'G']);
@@ -254,7 +264,7 @@ export async function main(ns) {
             [threads, runTimes, profit] = calcThreads(ns, tgt, pct);
             recalc = false;
         }
-        let execs = calcBatches(delay, runTimes);
+        let execs = calcBatches(ns, delay, runTimes, threads, src);
         let time = execs.filter(x => x[1] == "H")[0][0];
         recalc = await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit, verbose);
         // If a batch fails, make sure we let it fully run out.
