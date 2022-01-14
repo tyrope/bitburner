@@ -132,7 +132,7 @@ function calcBatches(ns, delay, runTimes, threads, src) {
  * @return {Boolean}          Whether or not we need to recalculate threads due to level-up.
 **/
 async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, verbose) {
-    ns.print(`Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, firstLand)}, yielding ${ns.nFormat(profit, "0.00a")}`);
+    ns.print(`INFO: Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, firstLand)}, yielding ${ns.nFormat(profit, "0.00a")}`);
     const currLvl = ns.getHackingLevel;
     const startLvl = currLvl();
     const now = ns.getTimeSinceLastAug;
