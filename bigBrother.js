@@ -20,7 +20,7 @@ export async function main(ns) {
     let serverData;
     while (true) {
         ns.clearLog();
-        serverData = [["Server", "$", "Sec"]];
+        serverData = [["Server", "Money", "Security"]];
         for (let s of servers) {
             serverData.push([
                 s,
