@@ -11,6 +11,7 @@ bigBrother.js
 gradeServers.js
 hacknetIdler.js
 hyperBatcher.js
+maxThreads.js
 scan.js
 serverGrower.js
 srvMngr.js
