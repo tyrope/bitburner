@@ -215,13 +215,13 @@ export async function main(ns) {
     //Parameter parsing.
     if (ns.args[0] == undefined) {
         ns.tprint("ERROR: Invalid target.");
-        ns.tprint("INFO: Usage: target(string), source(string), verbose(boolean, optional), percent(number, optional), simulate(boolean, optional).");
+        ns.tprint("INFO: Usage: target(string), source(string), percent(number, optional), verbose(boolean, optional), simulate(boolean, optional).");
         ns.exit();
     }
     const tgt = ns.args[0];
     const src = ns.args[1] ? ns.args[1] : ns.getHostname();
-    const verbose = ns.args[2] ? ns.args[2] : false;
-    const pct = ns.args[3] ? ns.args[3] : 0.2;
+    const pct = ns.args[2] ? ns.args[2] : 0.2;
+    const verbose = ns.args[3] ? ns.args[3] : false;
     const sim = ns.args[4];
 
     // Constants.
