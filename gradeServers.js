@@ -1,10 +1,10 @@
 // Server Grader (c) 2022 Tyrope
-// Usage: run serverGrader.js (percent) (verbose) (topOnly)
+// Usage: run serverGrader.js (percent) (topOnly)
 // Parameter percent: The % of maxMoney the batch will be stealing. (default: 20)
-// Parameter verbose: If true, widens the table with a bunch of extra values. (default: false)
 // Parameter topOnly: If given a number, will limit the amount of servers to only the top n. (default: Infinity)
 
 import { makeTable } from '/lib/tableMaker.js'
+import { timeFormat } from '/lib/format.js'
 import { getBatchInfo } from 'hyperBatcher.js'
 
 /** @param {NS} ns **/
@@ -13,8 +13,7 @@ export async function main(ns) {
     ns.tail();
 
     let pct = ns.args[0] ? ns.args[0] : 20;
-    let verbose = ns.args[1] ? ns.args[1] : false;
-    let topOnly = ns.args[2] ? ns.args[2] + 1 : Infinity;
+    let topOnly = ns.args[1] ? ns.args[1] + 1 : Infinity;
 
     // Get all the servers.
     let servers = scanServers(ns);
@@ -32,18 +31,13 @@ export async function main(ns) {
     // Sort by score.
     servers.sort((a, b) => { return getServerScore(ns, b, pct) - getServerScore(ns, a, pct); });
 
-    let data;
-    if (verbose) {
-        data = [["SERVER", "Max $", "Gr", "<S", "%h", "$*Gr", "$/s", "RAM", "Score"]];
-    } else {
-        data = [["SERVER", "$/s", "RAM", "Score"]];
-    }
+    let data = [["SERVER", "Max $", "%h", "$/s", "RAM/b", "tB", "RAM", "Score"]];
 
     for (let server of servers) {
         if (data.length >= topOnly) {
             break;
         }
-        data.push(getServerInfo(ns, server, pct, verbose));
+        data.push(getServerInfo(ns, server, pct));
     }
     ns.print(makeTable(data, false));
 }
@@ -52,7 +46,6 @@ export async function main(ns) {
  * @param {NS} ns
  * @param {String} server       Server to score.
  * @param {Number} pct          Percentage of maxMoney to hack.
- * @param {Boolean} useFormulas If true, use formulas to maxMoney/minSec. If false, live data.
  * @return {Number} The server's score.
 **/
 function getServerScore(ns, server, pct) {
@@ -70,33 +63,20 @@ function getServerScore(ns, server, pct) {
  * @param {NS} ns
  * @param {String} srv          Server to score.
  * @param {Number} pct          Percentage of maxMoney to hack.
- * @param {Boolean} verbose     If true, add a whole bunch of extra values.
- * @param {Boolean} useFormulas If true, use formulas to maxMoney/minSec. If false, live data.
  * @return {Object[]} The server's information.
 **/
-function getServerInfo(ns, srv, pct, verbose) {
+function getServerInfo(ns, srv, pct) {
     let batchInfo = getBatchInfo(ns, srv, pct);
     let chanceToHack = ns.formulas.hacking.hackChance(ns.getServer(srv), ns.getPlayer());
-    if (verbose) {
-        return ([
-            srv,
-            ns.nFormat(ns.getServerMaxMoney(srv), "0.00a"),
-            ns.getServerGrowth(srv),
-            ns.getServerMinSecurityLevel(srv),
-            `${ns.nFormat(chanceToHack * 100, "0.00")}%`,
-            `${ns.nFormat(ns.getServerMaxMoney(srv) * ns.getServerGrowth(srv), "0.00a")}`,
-            ns.nFormat(batchInfo[2] / batchInfo[1], "0.00a"),
-            ns.nFormat(batchInfo[0] * 1e9, "0.00b"),
-            ns.nFormat(getServerScore(ns, srv, pct), "0.000")
-        ]);
-    } else {
-        return ([
-            srv,
-            ns.nFormat(batchInfo[2] / batchInfo[1], "0.000a"),
-            ns.nFormat(batchInfo[0] * 1e9, "0.00b"),
-            ns.nFormat(getServerScore(ns, srv, pct), "0.000")
-        ]);
-    }
+    return ([
+        srv,
+        ns.nFormat(ns.getServerMaxMoney(srv), "0.00a"), // "Max $"
+        `${ns.nFormat(chanceToHack * 100, "0.00")}%`, // "%h"
+        ns.nFormat(batchInfo[2] / batchInfo[1], "0.00a"), //"$/s"
+        ns.nFormat(batchInfo[0] * 1e9, "0.00b"), //"RAM/b"
+        timeFormat(ns, batchInfo[1], true), //"tB"
+        ns.nFormat(getServerScore(ns, srv, pct), "0.000") //"Score"
+    ]);
 }
 
 /** Breadth-first scan of the entire network.
