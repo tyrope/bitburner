@@ -42,7 +42,7 @@ async function purchase(ns) {
 
 /** @param {NS} ns **/
 function price(ns) {
-    ns.tprint(`A server with ${ns.nFormat(ns.args[0] * 10e8, "0.0b")}RAM costs ${ns.nFormat(ns.getPurchasedServerCost(ns.args[0]), "0.0a")}`);
+    ns.tprint(`A server with ${ns.nFormat(ns.args[0] * 10e8, "0.0b")} RAM costs ${ns.nFormat(ns.getPurchasedServerCost(ns.args[0]), "0.0a")}`);
 }
 
 /** @param {NS} ns **/
