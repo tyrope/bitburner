@@ -2,7 +2,7 @@
 // Usage: run hyperBatcher.js [target] (source) (verbose) (percentage) (simulate)
 // Parameter target: The server to take money from.
 // Parameter source: The server to run the attack. (default: the server this runs on.)
-// Parameter verbose: If true, we print every script launch to the log. (default: false)
+// Parameter verbose: If true,s how a toast for every completed hack. (default: false)
 // Parameter percentage: Percentage of maxMoney to steal. (Default: 0.2)
 // Parameter simulate: If true, don't run scripts; print the expected results instead. (Default: false)
 
@@ -177,10 +177,6 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
         if (ns.getServerMaxRam(src) - ns.getServerUsedRam(src) < ns.getScriptRam(script, src)) {
             ns.print(`ERROR: Aborting, out of RAM.`);
             return false;
-        }
-
-        if (verbose) {
-            ns.print(`INFO: [T+${timeFormat(ns, now() - batchStart, true)}]Launching ${x[1]}.`);
         }
         ns.exec(script, src, t, tgt, profit, verbose, now());
     }
