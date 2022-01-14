@@ -1,3 +1,6 @@
+batch/grow.js
+batch/hack.js
+batch/weaken.js
 batchv1/batchDaemon.js
 batchv1/grow.js
 batchv1/hack.js
@@ -7,6 +10,7 @@ lib/tableMaker.js
 bigBrother.js
 gradeServers.js
 hacknetIdler.js
+hyperBatcher.js
 scan.js
 serverGrower.js
 srvMngr.js
