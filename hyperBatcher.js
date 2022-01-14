@@ -176,10 +176,11 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
         // Ensure we're not bumping into RAM limitations
         if (ns.getServerMaxRam(src) - ns.getServerUsedRam(src) < ns.getScriptRam(script, src)) {
             ns.print(`ERROR: Aborting, out of RAM.`);
-            return false;
+            return true;
         }
         ns.exec(script, src, t, tgt, profit, verbose, now());
     }
+    return false;
 }
 
 /** Calculate the threads needed to hack tgt for pct% of maxMoney.
