@@ -232,6 +232,12 @@ export async function main(ns) {
         ns.exit();
     }
 
+    if (ns.getServerMaxMoney(tgt) != ns.getServerMoneyAvailable(tgt) ||
+        ns.getServerMinSecurityLevel(tgt) != ns.getServerSecurityLevel(tgt)) {
+        ns.tprint(`ERROR: Server ${tgt} not prepared.`);
+        ns.exit();
+    }
+
     // ensure the src server has the latest hacking scripts.
     if (src != 'home') {
         for (let file of ['/batch/hack.js', '/batch/grow.js', '/batch/weaken.js']) {
