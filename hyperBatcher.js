@@ -144,14 +144,13 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
             ns.print(`WARNING: [T+${timeFormat(ns, now() - batchStart, false)}]Hack level increased, aborting hack.`);
             return true;
         }
-        // Check if an abort has been called.
+        // Check if an abort has been called by hack.js
         if (ns.fileExists(`ABORT_${tgt}.txt`, src)) {
-            // Check if this is for our target
-            ns.print(`ERROR: [T+${timeFormat(ns, now() - batchStart, false)}]ABORT received from hack.js.`);
             ns.rm(`ABORT_${tgt}.txt`, src);
-            // Abort.
+            ns.print(`ERROR: [T+${timeFormat(ns, now() - batchStart, false)}]ABORT received from hack.js.`);
             return true;
         }
+
         switch (x[1]) {
             case "H":
                 script = "/batch/hack.js";
