@@ -107,7 +107,7 @@ function calcBatches(ns, delay, runTimes, threads, src) {
         ns.getScriptRam('/batch/grow.js', src) * threads[2] +
         ns.getScriptRam('/batch/weaken.js', src) * (threads[1] + threads[3]);
     // This will break if multiple batchers are running.
-    let maxBatches = ns.getServerMaxRam(src) - ns.getServerUsedRam(src);
+    let maxBatches = (ns.getServerMaxRam(src) - ns.getServerUsedRam(src)) / ramUse;
 
     // Get the start times.
     let execs = Array();
