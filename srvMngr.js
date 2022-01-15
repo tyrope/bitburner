@@ -1,6 +1,6 @@
 // Server Manager (c) 2022 Tyrope
 // Usage: run srvMngr.js [RAM] [mode]
-// parameter RAM: Amount of RAM.
+// parameter RAM: How much RAM you want (2**n)
 // parameter mode:
 //  0 = Check price of 1 server with RAM.
 //  1 = Delete IDLE servers small than the RAM.
@@ -14,7 +14,7 @@ function deleteServers(ns, delAll) {
     let del = 0;
     let srvs = ns.getPurchasedServers();
     for (let i = 0; i < srvs.length; i++) {
-        if (ns.getServerMaxRam(srvs[i]) < ns.args[0]) {
+        if (ns.getServerMaxRam(srvs[i]) < 2**ns.args[0]) {
             if (delAll || ns.getServerUsedRam(srvs[i]) == 0) {
                 ns.killall(srvs[i]);
                 ns.deleteServer(srvs[i]);
@@ -29,8 +29,8 @@ function deleteServers(ns, delAll) {
 async function purchase(ns) {
     for (let i = 0; i < ns.args[2]; i++) {
         while (true) {
-            if (ns.getPurchasedServerCost(ns.args[0]) < ns.getServerMoneyAvailable("home")) {
-                let ret = ns.purchaseServer(ns.args[3], ns.args[0]);
+            if (ns.getPurchasedServerCost(2 ** ns.args[0]) < ns.getServerMoneyAvailable("home")) {
+                let ret = ns.purchaseServer(ns.args[3], 2 ** ns.args[0]);
                 ns.tprint(`bought ${ret}`);
                 break;
             } else {
@@ -42,13 +42,13 @@ async function purchase(ns) {
 
 /** @param {NS} ns **/
 function price(ns) {
-    ns.tprint(`A server with ${ns.nFormat(ns.args[0] * 10e8, "0.0b")} RAM costs ${ns.nFormat(ns.getPurchasedServerCost(ns.args[0]), "0.0a")}`);
+    ns.tprint(`A server with ${ns.nFormat((2 ** ns.args[0]) * 10e8, "0.0b")} RAM costs ${ns.nFormat(ns.getPurchasedServerCost(2 ** ns.args[0]), "0.0a")}`);
 }
 
 /** @param {NS} ns **/
 export async function main(ns) {
     if (ns.args[1] === undefined) {
-        ns.tprint("Wrong parameters.");
+        ns.tprint("Usage: RAM (number), mode (number), amount (number, optional if mode != 3), name (string)");
         ns.exit();
         return;
     }
@@ -67,6 +67,6 @@ export async function main(ns) {
             await purchase(ns);
             break;
         default:
-            ns.tprint("Wrong parameters.");
+            ns.tprint("Wrong mode: 0 = price, 1 = delete idle, 2 = delete all, 3 = buy");
     }
 }
