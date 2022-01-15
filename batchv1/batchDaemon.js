@@ -241,6 +241,15 @@ export async function main(ns) {
     }
 
     let cansim = ns.fileExists('Formulas.exe', 'home');
+    if (simulate && !cansim) {
+        ns.tprint("WARNING: Trying to simulate without Formulas.");
+        if (
+            ns.getServerMaxMoney(tgt) != ns.getServerMoneyAvailable(tgt) ||
+            ns.getServerSecurityLevel(tgt) != ns.getServerMinSecurityLevel(tgt)
+        ) {
+            ns.tprint("ERROR: Server not prepared, results will be incorrect.");
+        }
+    }
 
     // Calculate the hacking threads.
     let calc = calcHack(ns, tgt, moneyPct, cansim);
