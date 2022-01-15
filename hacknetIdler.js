@@ -20,9 +20,14 @@ export async function main(ns) {
     ns.disableLog("getServerMoneyAvailable");
     ns.disableLog("sleep");
 
+    // Do FOREVAH! (TODO: Stop when done?)
     while (true) {
+
+        // Try upgrading first.
         for (let i = 0; i < ns.hacknet.numNodes(); i++) {
             ns.print("Shopping for node " + i);
+
+            // Level up if below the maximum level desired and we can afford it.
             while (
                 ns.hacknet.getNodeStats(i).level < maxLevel &&
                 ns.hacknet.getLevelUpgradeCost(i, 1) < myCash(ns)
@@ -31,6 +36,8 @@ export async function main(ns) {
                 ns.print("Bought levels for " + i);
                 await ns.sleep(sleepPurchase);
             }
+
+            // Buy RAM if below the maximum RAM desired and we can afford it.
             while (
                 ns.hacknet.getNodeStats(i).ram < maxRam &&
                 ns.hacknet.getRamUpgradeCost(i, 1) < myCash(ns)
@@ -39,6 +46,8 @@ export async function main(ns) {
                 ns.print("Bought ram for " + i);
                 await ns.sleep(sleepPurchase);
             }
+
+            // Buy at core if below the maximum cores desired and we can afford it.
             while (
                 ns.hacknet.getNodeStats(i).cores < maxCore &&
                 ns.hacknet.getCoreUpgradeCost(i, 1) < myCash(ns)
@@ -48,6 +57,8 @@ export async function main(ns) {
                 await ns.sleep(sleepPurchase);
             }
         }
+
+        // After attempting to afford upgrades, buy nodes.
         while (
             ns.hacknet.numNodes() < maxNodes &&
             ns.hacknet.getPurchaseNodeCost() < myCash(ns)
