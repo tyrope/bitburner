@@ -240,21 +240,23 @@ export async function main(ns) {
         await checkServerPrep(ns, tgt, source);
     }
 
+    let cansim = ns.fileExists('Formulas.exe', 'home');
+
     // Calculate the hacking threads.
-    let calc = calcHack(ns, tgt, moneyPct, simulate);
+    let calc = calcHack(ns, tgt, moneyPct, cansim);
     threads.push(calc[0]); runTimes.push(calc[1]);
     moneyPct = calc[2];
 
     // Calculate the weaken we need to counter hack.
-    calc = calcWeaken(ns, tgt, calc[3], simulate);
+    calc = calcWeaken(ns, tgt, calc[3], cansim);
     threads.push(calc[0]); runTimes.push(calc[1]);
 
     // Calculate the grow we need.
-    calc = calcGrow(ns, tgt, moneyPct, simulate);
+    calc = calcGrow(ns, tgt, moneyPct, cansim);
     threads.push(calc[0]); runTimes.push(calc[1]);
 
     // Calculate the weaken we need to counter grow.
-    calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]), simulate);
+    calc = calcWeaken(ns, tgt, ns.growthAnalyzeSecurity(threads[2]), cansim);
     threads.push(calc[0]); runTimes.push(calc[1]);
 
     // Ensure the source server has the latest version of the batchfiles.
