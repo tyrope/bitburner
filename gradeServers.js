@@ -6,6 +6,7 @@
 import { makeTable } from '/lib/tableMaker.js'
 import { timeFormat } from '/lib/format.js'
 import { getBatchInfo } from 'hyperBatcher.js'
+import { getServers } from '/lib/netLib.js'
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -16,7 +17,7 @@ export async function main(ns) {
     let topOnly = ns.args[1] ? ns.args[1] + 1 : Infinity;
 
     // Get all the servers.
-    let servers = scanServers(ns);
+    let servers = getServers(ns);
 
     // Only keep servers that...
     servers = servers.filter((s) => {
@@ -48,7 +49,7 @@ export async function main(ns) {
  * @param {Number} pct          Percentage of maxMoney to hack.
  * @return {Number} The server's score.
 **/
-function getServerScore(ns, server, pct) {
+export function getServerScore(ns, server, pct) {
     let chanceToHack;
     let srv = ns.getServer(server);
     srv.hackDifficulty = srv.minDifficulty;
@@ -77,33 +78,4 @@ function getServerInfo(ns, srv, pct) {
         timeFormat(ns, batchInfo[1], true), //"tB"
         ns.nFormat(getServerScore(ns, srv, pct), "0.000") //"Score"
     ]);
-}
-
-/** Breadth-first scan of the entire network.
- * @param {NS} ns
- * @return {String[]} list of servers.
-**/
-function scanServers(ns) {
-    let scanned = []; // List of all the scanned servers.
-    let frontier = ["home"]; // List of the servers we're going to scan.
-    let todo; // Current server we're scanning.
-    let neighbors; // The servers adjacent to todo
-
-    // Main loop.
-    while (frontier.length > 0) {
-        // Get the next server.
-        todo = frontier.shift()
-        // Tell the script we've scanned it.
-        scanned.push(todo);
-        // Go through it's neighbors.
-        neighbors = ns.scan(todo);
-        for (let i = 0; i < neighbors.length; i++) {
-            // Check if we've scanned it.
-            if (scanned.indexOf(neighbors[i]) == -1) {
-                // Add it to the list if not.
-                frontier.push(neighbors[i]);
-            }
-        }
-    }
-    return scanned;
 }
