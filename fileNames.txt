@@ -16,4 +16,5 @@ maxThreads.js
 runAll.js
 serverGrower.js
 srvMngr.js
+stocksStonks.js
 targetHack.js
