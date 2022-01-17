@@ -59,9 +59,9 @@ function calcGrow(ns, tgt, money) {
 
 /** Calculate the amount of weaken threads needed for a batch attack.
  * @param {NS} ns
- * @param {String} tgt        The hostname of the target server.
- * @param {Number} secIncrase The amount of security we need to lower.
- * @return {Number[]}         The amount of threads, weaken duration, security decrease.
+ * @param {String} tgt         The hostname of the target server.
+ * @param {Number} secIncrease The amount of security we need to lower.
+ * @return {Number[]}          The amount of threads, weaken duration, security decrease.
  */
 function calcWeaken(ns, tgt, secIncrease) {
     // Calculate the weaken we need to counter hack.
