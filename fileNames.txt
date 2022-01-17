@@ -13,7 +13,7 @@ gradeServers.js
 hacknetIdler.js
 hyperBatcher.js
 maxThreads.js
-scan.js
+runAll.js
 serverGrower.js
 srvMngr.js
 targetHack.js

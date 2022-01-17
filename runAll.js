@@ -2,6 +2,8 @@
 // Usage: run scan.js target
 //parameter target: exact name (case sensitive, maybe) to grow.
 
+import { getServers } from '/lib/netLib.js'
+
 let scriptName = "serverGrower.js";
 
 export function autocomplete(data, args) {
@@ -100,31 +102,12 @@ export async function main(ns) {
         ns.exit();
     }
 
-    // TODO: Allow for blacklisting.
-
-    let scanned = []; // List of all the scanned servers.
-    let frontier = ["home"]; // List of the servers we're going to scan.
-    let todo; // Current server we're scanning.
-    let neighbors; // The servers adjacent to todo
     let tools = getTools(ns);
 
-    // Main loop.
-    while (frontier.length > 0) {
-        // Get the next server.
-        todo = frontier.shift()
-        // Control it.
-        await control(ns, todo, tools);
-        // Tell the script we've scanned it.
-        scanned.push(todo);
-        // Go through it's neighbors.
-        neighbors = ns.scan(todo);
-        for (let i = 0; i < neighbors.length; i++) {
-            // Check if we've scanned it.
-            if (scanned.indexOf(neighbors[i]) == -1) {
-                // Add it to the list if not.
-                frontier.push(neighbors[i]);
-            }
-        }
+    //TODO: Allow for blacklisting.
+    for (let server in getServers(ns)) {
+        await control(ns, server, tools);
     }
+
     ns.tprint("Scan complete.");
 }
