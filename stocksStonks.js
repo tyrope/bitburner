@@ -35,19 +35,19 @@ function updateStockPrices(ns) {
 function sellOwnedStocks(ns) {
     let earnedMoney = 0;
     // Loop through all stocks we own.
-    for (let i = 0; i < SYMBOLS.length; i++) {
-        if (SYMBOLS[i].owned < 1) {
+    for (let sym of SYMBOLS) {
+        if (sym.owned < 1) {
             // Can't sell stocks we don't have.
             continue;
         }
 
-        if (SYMBOLS[i].buyPrice * SYMBOLS[i].owned * 1.1 < // The price we paid +10% is less than
-            ns.stock.getSaleGain(SYMBOLS[i].name, SYMBOLS[i].owned, "L")) { // the money we'll get if we sell now.
+        if (sym.buyPrice * sym.owned * 1.1 < // The price we paid +10% is less than
+            ns.stock.getSaleGain(sym.name, sym.owned, "L")) { // the money we'll get if we sell now.
             // Try to sell when we have a 10% or higher profit.
-            let transaction = ns.stock.sell(SYMBOLS[i].name, SYMBOLS[i].owned) * SYMBOLS[i].owned;
+            let transaction = ns.stock.sell(sym.name, sym.owned) * sym.owned;
             earnedMoney += transaction;
             if (verbose) {
-                ns.print(`Sold ${SYMBOLS[i].name} x ${SYMBOLS[i].owned} for ${transaction}`);
+                ns.print(`Sold ${sym.name} x ${sym.owned} for ${transaction}`);
             }
         }
     }
@@ -72,14 +72,14 @@ function buyCheapStocks(ns) {
             );
 
             // TODO: This could use a more elegant solution.
-            while (ns.stock.getPurchaseCost(sym.money, shares, "L") > getSpendingMoney(ns)) {
-                let overpay = ns.stock.getPurchaseCost(sym.money, shares, "L") - getSpendingMoney(ns);
+            while (ns.stock.getPurchaseCost(sym.name, shares, "L") > getSpendingMoney(ns)) {
+                let overpay = ns.stock.getPurchaseCost(sym.name, shares, "L") - getSpendingMoney(ns);
                 shares -= overpay / ns.stock.getPrice(sym.name);
             }
             let transaction = ns.stock.buy(sym.name, shares) * shares;
             spentMoney += transaction;
             if (verbose) {
-                ns.print(`Bought ${SYMBOLS[i].name} x ${SYMBOLS[i].owned} for ${spentMoney}`);
+                ns.print(`Bought ${sym.name} x ${sym.owned} for ${spentMoney}`);
             }
         }
     }
