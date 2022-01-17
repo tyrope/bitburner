@@ -6,5 +6,5 @@ lib/matrix.js
 bitburnerFiles.zip
 
 # A couple of scripts that are too volatile or specific to share.
-runAll.js
+dispatcher.js
 test.js
