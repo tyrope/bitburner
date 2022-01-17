@@ -1,5 +1,5 @@
-// This script goes through *all* servers in the game and runs scruotName on them with max RAM.
-// Usage: run scan.js target
+// This script goes through *all* servers in the game and runs scriptName on them with max RAM.
+// Usage: run runAll.js target
 //parameter target: exact name (case sensitive, maybe) to grow.
 
 import { getServers } from '/lib/netLib.js'
