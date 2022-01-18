@@ -1,5 +1,5 @@
 // Stocks Stonks (c) 2022 Tyrope
-// Usage: run stocksstonks.js (pocketMoney) (verbose)
+// Usage: run stocksstonks.js [spendingCash] (verbose)
 // Parameter pocketMoney: The minimum amount of money to keep available to the player. (Default: 0)
 // Parameter verbose: Whether to print out every purchase/sale (Default: false)
 
@@ -9,11 +9,6 @@ import { timeFormat } from '/lib/format.js'
 const SYMBOLS = Array();
 let pocketMoney;
 let verbose;
-
-/** @param {NS} ns **/
-function getSpendingMoney(ns) {
-    return ns.getServerMoneyAvailable('home') - pocketMoney;
-}
 
 /** @param {NS} ns **/
 function updateStockPrices(ns) {
@@ -36,12 +31,16 @@ function updateStockPrices(ns) {
  * @param {NS} ns
  * @return {Number} Money earned from sales.
  * **/
-function sellOwnedStocks(ns) {
+function sellStocks(ns) {
     let earnedMoney = 0;
     // Loop through all stocks we own.
     for (let sym of SYMBOLS) {
         if (sym.owned < 1) {
             // Can't sell stocks we don't have.
+            continue;
+        }
+        if (ns.stock.getForecast(sym.name) > 0.65) {
+            // Don't sell stocks we'll just buy back.
             continue;
         }
 
@@ -55,6 +54,7 @@ function sellOwnedStocks(ns) {
             }
         }
     }
+    pocketMoney += earnedMoney;
     return earnedMoney;
 }
 
@@ -62,26 +62,30 @@ function sellOwnedStocks(ns) {
  * @param {NS} ns
  * @return {Number} Money spent on stocks.
  * **/
-async function buyCheapStocks(ns) {
+function buyStocks(ns) {
     let spentMoney = 0;
     for (let sym of SYMBOLS) {
         if (ns.stock.getForecast(sym.name) > 0.65) {
             //How much could we theoretically buy?
-            let shares = Math.min(
-                getSpendingMoney(ns) / ns.stock.getPrice(sym.name), // Amount of shares we can afford at market price.
+            let shares = Math.floor(Math.min(
+                pocketMoney / ns.stock.getPrice(sym.name), // Amount of shares we can afford at market price.
                 ns.stock.getMaxShares(sym.name) - sym.owned // Shares still on the market
-            );
-            // TODO: This could use a more elegant solution.
-            while (shares > 1 && ns.stock.getPurchaseCost(sym.name, shares, "L") > getSpendingMoney(ns)) {
-                let overpay = ns.stock.getPurchaseCost(sym.name, shares, "L") - getSpendingMoney(ns);
-                shares -= overpay / ns.stock.getPrice(sym.name);
+            ));
+
+            // Double-check the price.
+            while (shares > 1 && ns.stock.getPurchaseCost(sym.name, shares, "L") > pocketMoney) {
+                let overpay = ns.stock.getPurchaseCost(sym.name, shares, "L") - pocketMoney;
+                shares -= Math.max(Math.floor(overpay / ns.stock.getPrice(sym.name)), 1);
             }
-            if (shares == 0) {
+            if (shares < 1) {
                 continue;
             }
-            await ns.sleep(1);
-            let transaction = ns.stock.buy(sym.name, shares);
-            spentMoney += transaction * shares;
+            let transaction = ns.stock.getPurchaseCost(sym.name, shares, "L");
+            if (ns.stock.buy(sym.name, shares) == 0) {
+                continue;
+            }
+            spentMoney += transaction;
+            pocketMoney -= spentMoney;
             if (verbose) {
                 ns.print(`Bought ${sym.name} x ${ns.nFormat(shares, "0.00a")} at ${ns.nFormat(transaction, "0.00a")}/share.`);
             }
@@ -95,8 +99,14 @@ export async function main(ns) {
     ns.disableLog('ALL');
 
     // Set parameters.
-    pocketMoney = ns.args[0] ? ns.args[0] : 0;
+    pocketMoney = ns.args[0];
     verbose = ns.args[1] ? ns.args[1] : false;
+
+    if (pocketMoney == undefined || pocketMoney <= 0) {
+        ns.tprint("ERROR: Not enough spending cash.");
+        ns.tprint("INFO: Usage: spendingCash(number), verbose(boolean, optional).");
+        ns.exit();
+    }
 
     // Build the symbols dictionary.
     let pos;
@@ -117,8 +127,8 @@ export async function main(ns) {
 
     while (true) {
         updateStockPrices(ns);
-        let sold = ns.nFormat(sellOwnedStocks(ns), "$0.00a");
-        let bought = ns.nFormat(await buyCheapStocks(ns), "$0.00a");
+        let sold = ns.nFormat(sellStocks(ns), "$0.00a");
+        let bought = ns.nFormat(buyStocks(ns), "$0.00a");
         ns.print(`INFO: [T+${timeFormat(ns, now() - start)}]Spent ${bought}, earned ${sold}`);
         await ns.sleep(3000);
     }
