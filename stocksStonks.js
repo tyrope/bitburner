@@ -18,13 +18,17 @@ function getSpendingMoney(ns) {
 /** @param {NS} ns **/
 function updateStockPrices(ns) {
     let price;
+    let pos;
     for (let i = 0; i < SYMBOLS.length; i++) {
         price = ns.stock.getPrice(SYMBOLS[i].name);
+        pos = ns.stock.getPosition(SYMBOLS[i].name);
         if (price < SYMBOLS[i].minPrice) {
             SYMBOLS[i].minPrice = price;
         } else if (price > SYMBOLS[i].maxPrice) {
             SYMBOLS[i].maxPrice = price;
         }
+        SYMBOLS[i].owned = pos[0];
+        SYMBOLS[i].buyPrice = pos[1];
     }
 }
 
