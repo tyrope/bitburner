@@ -1,9 +1,9 @@
 // Hyper Batcher (c) 2022 Tyrope
-// Usage: run hyperBatcher.js [target] (source) (verbose) (percentage) (simulate)
+// Usage: run hyperBatcher.js [target] (source) (percentage) (affectStocks) (simulate)
 // Parameter target: The server to take money from.
 // Parameter source: The server to run the attack. (default: the server this runs on.)
-// Parameter verbose: If true,s how a toast for every completed hack. (default: false)
 // Parameter percentage: Percentage of maxMoney to steal. (Default: 0.2)
+// Parameter affectStocks: "H","G", or "GH", to let grows and/or hacks affect stocks. (Default: "")
 // Parameter simulate: If true, don't run scripts; print the expected results instead. (Default: false)
 
 import { timeFormat } from '/lib/format.js';
@@ -124,21 +124,22 @@ function calcBatches(ns, delay, runTimes, threads, src) {
 
 /** Run the batch hacks.
  * @param {NS} ns
- * @param {String} tgt        The server we're stealing money from.
- * @param {String} src        The server running the hacks.
- * @param {Number[4]} threads The amount of threads of the script types.
- * @param {Array} execs       Array of [Number,String]; indicating delay and type of script.
- * @param {Number} profit     The expected money to get per hack.
- * @return {Boolean}          Whether or not we need to recalculate threads due to level-up.
+ * @param {String} tgt          The server we're stealing money from.
+ * @param {String} src          The server running the hacks.
+ * @param {Number[4]} threads   The amount of threads of the script types.
+ * @param {Array} execs         Array of [Number,String]; indicating delay and type of script.
+ * @param {Number} profit       The expected money to get per hack.
+ * @param {String} affectStocks A string containing "H" to have hacks influence stocks, "G" to have grow influence stocks.
+ * @return {Boolean} True if we cancelled early, requiring recalculation before restarting.
 **/
-async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, verbose) {
+async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, affectStocks) {
     ns.print(`INFO: Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, firstLand)}, yielding ${ns.nFormat(profit, "0.00a")}`);
     const currLvl = ns.getHackingLevel;
     const startLvl = currLvl();
     const now = ns.getTimeSinceLastAug;
     const batchStart = now();
 
-    let script = ""; let t; let slept = 0;
+    let script = ""; let t; let slept = 0; let affect;
     for (let x of execs) {
         if (currLvl() != startLvl) {
             ns.print(`WARNING: [T+${timeFormat(ns, now() - batchStart, false)}]Hack level increased, aborting hack.`);
@@ -187,7 +188,7 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, ve
             ns.print(`ERROR: [T+${timeFormat(ns, now() - batchStart, false)}]Aborting, out of RAM.`);
             return true;
         }
-        ns.exec(script, src, t, tgt, profit, verbose, now());
+        ns.exec(script, src, t, tgt, profit, affectStocks.includes(x[1]), now());
     }
     return false;
 }
@@ -214,13 +215,14 @@ export async function main(ns) {
     //Parameter parsing.
     if (ns.args[0] == undefined) {
         ns.tprint("ERROR: Invalid target.");
-        ns.tprint("INFO: Usage: target(string), source(string), percent(number, optional), verbose(boolean, optional), simulate(boolean, optional).");
+        ns.tprint("INFO: Usage: target(string), source(string, optional), percent(number, optional), affectStocks(string, optional), simulate(boolean, optional).");
         ns.exit();
     }
+
     const tgt = ns.args[0];
     const src = ns.args[1] ? ns.args[1] : ns.getHostname();
     const pct = ns.args[2] ? ns.args[2] : 0.2;
-    const verbose = ns.args[3] ? ns.args[3] : false;
+    const affectStocks = ns.args[3] ? ns.args[3] : "";
     const sim = ns.args[4];
 
     // Constants.
@@ -268,7 +270,7 @@ export async function main(ns) {
         }
         let execs = calcBatches(ns, delay, runTimes, threads, src);
         let time = execs.filter(x => x[1] == "H")[0][0];
-        recalc = await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit, verbose);
+        recalc = await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit, affectStocks);
         // If a batch fails, make sure we let it fully run out.
         await ns.sleep(runTimes[1] + delay * 2);
     }
