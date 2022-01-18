@@ -58,13 +58,10 @@ function sellOwnedStocks(ns) {
  * @param {NS} ns
  * @return {Number} Money spent on stocks.
  * **/
-function buyCheapStocks(ns) {
+async function buyCheapStocks(ns) {
     let spentMoney = 0;
     for (let sym of SYMBOLS) {
-        if (
-            ns.stock.getPrice(sym.name) == sym.minPrice && //If we're currently at lowest known price
-            sym.minPrice < sym.maxPrice * 0.9 // And we know we can make a 10% profit
-        ) {
+        if (ns.stock.getForecast(sym.name) > 0.65) {
             //How much could we theoretically buy?
             let shares = Math.min(
                 getSpendingMoney(ns) / ns.stock.getPrice(sym.name), // Amount of shares we can afford at market price.
@@ -72,10 +69,11 @@ function buyCheapStocks(ns) {
             );
 
             // TODO: This could use a more elegant solution.
-            while (ns.stock.getPurchaseCost(sym.name, shares, "L") > getSpendingMoney(ns)) {
+            while (shares > 1 && ns.stock.getPurchaseCost(sym.name, shares, "L") > getSpendingMoney(ns)) {
                 let overpay = ns.stock.getPurchaseCost(sym.name, shares, "L") - getSpendingMoney(ns);
                 shares -= overpay / ns.stock.getPrice(sym.name);
             }
+            await ns.sleep(1);
             let transaction = ns.stock.buy(sym.name, shares) * shares;
             spentMoney += transaction;
             if (verbose) {
@@ -106,11 +104,16 @@ export async function main(ns) {
             buyPrice: pos[1]
         });
     }
+
+    // Timekeeping
+    let now = ns.getTimeSinceLastAug;
+    let start = now();
+
     while (true) {
         updateStockPrices(ns);
         let sold = ns.nFormat(sellOwnedStocks(ns), "$0.00a");
-        let bought = ns.nFormat(buyCheapStocks(ns), "$0.00a");
-        ns.print(`INFO: [T+${timeFormat(ns, ns.getTimeSinceLastAug())}]Spent ${bought}, earned ${sold}`);
+        let bought = ns.nFormat(await buyCheapStocks(ns), "$0.00a");
+        ns.print(`INFO: [T+${timeFormat(ns, now() - start)}]Spent ${bought}, earned ${sold}`);
         await ns.sleep(3000);
     }
 }
