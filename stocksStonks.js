@@ -44,10 +44,10 @@ function sellOwnedStocks(ns) {
         if (sym.buyPrice * sym.owned * 1.1 < // The price we paid +10% is less than
             ns.stock.getSaleGain(sym.name, sym.owned, "L")) { // the money we'll get if we sell now.
             // Try to sell when we have a 10% or higher profit.
-            let transaction = ns.stock.sell(sym.name, sym.owned) * sym.owned;
-            earnedMoney += transaction;
+            let transaction = ns.stock.sell(sym.name, sym.owned);
+            earnedMoney += transaction * sym.owned;
             if (verbose) {
-                ns.print(`Sold ${sym.name} x ${sym.owned} for ${transaction}`);
+                ns.print(`Sold ${sym.name} x ${ns.nFormat(sym.owned, "0.00a")} for ${ns.nFormat(transaction, "0.00a")}/share`);
             }
         }
     }
@@ -67,17 +67,19 @@ async function buyCheapStocks(ns) {
                 getSpendingMoney(ns) / ns.stock.getPrice(sym.name), // Amount of shares we can afford at market price.
                 ns.stock.getMaxShares(sym.name) - sym.owned // Shares still on the market
             );
-
             // TODO: This could use a more elegant solution.
             while (shares > 1 && ns.stock.getPurchaseCost(sym.name, shares, "L") > getSpendingMoney(ns)) {
                 let overpay = ns.stock.getPurchaseCost(sym.name, shares, "L") - getSpendingMoney(ns);
                 shares -= overpay / ns.stock.getPrice(sym.name);
             }
+            if (shares == 0) {
+                continue;
+            }
             await ns.sleep(1);
-            let transaction = ns.stock.buy(sym.name, shares) * shares;
-            spentMoney += transaction;
+            let transaction = ns.stock.buy(sym.name, shares);
+            spentMoney += transaction * shares;
             if (verbose) {
-                ns.print(`Bought ${sym.name} x ${sym.owned} for ${spentMoney}`);
+                ns.print(`Bought ${sym.name} x ${ns.nFormat(shares, "0.00a")} at ${ns.nFormat(transaction, "0.00a")}/share.`);
             }
         }
     }
