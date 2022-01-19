@@ -47,8 +47,11 @@ function sellStocks(ns) {
         if (sym.buyPrice * sym.owned * 1.1 < // The price we paid +10% is less than
             ns.stock.getSaleGain(sym.name, sym.owned, "L")) { // the money we'll get if we sell now.
             // Try to sell when we have a 10% or higher profit.
-            let transaction = ns.stock.sell(sym.name, sym.owned);
-            earnedMoney += transaction * sym.owned;
+            let transaction = ns.stock.getSaleGain(sym.name, sym.owned, "L");
+            if (ns.stock.sell(sym.name, sym.owned) == 0) {
+                continue;
+            }
+            earnedMoney += transaction;
             if (verbose) {
                 ns.print(`Sold ${sym.name} x ${ns.nFormat(sym.owned, "0.00a")} for ${ns.nFormat(transaction, "0.00a")}/share`);
             }
@@ -129,7 +132,9 @@ export async function main(ns) {
         updateStockPrices(ns);
         let sold = ns.nFormat(sellStocks(ns), "$0.00a");
         let bought = ns.nFormat(buyStocks(ns), "$0.00a");
-        ns.print(`INFO: [T+${timeFormat(ns, now() - start)}]Spent ${bought}, earned ${sold}`);
-        await ns.sleep(3000);
+        if (verbose) {
+            ns.print(`INFO: [T+${timeFormat(ns, now() - start)}]Spent ${bought}, earned ${sold}`);
+        }
+        await ns.sleep(1500);
     }
 }
