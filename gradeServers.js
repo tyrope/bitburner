@@ -13,8 +13,8 @@ export async function main(ns) {
     ns.disableLog('ALL');
     ns.tail();
 
-    let pct = ns.args[0] ? ns.args[0] : 20;
-    let topOnly = ns.args[1] ? ns.args[1] + 1 : Infinity;
+    const pct = ns.args[0] ? ns.args[0] : 20;
+    const topOnly = ns.args[1] ? ns.args[1] + 1 : Infinity;
 
     // Get all the servers.
     let servers = getServers(ns);
@@ -51,7 +51,7 @@ export async function main(ns) {
 **/
 export function getServerScore(ns, server, pct) {
     let chanceToHack;
-    let srv = ns.getServer(server);
+    const srv = ns.getServer(server);
     srv.hackDifficulty = srv.minDifficulty;
     srv.moneyAvailable = srv.moneyMax;
     chanceToHack = ns.formulas.hacking.hackChance(srv, ns.getPlayer());
