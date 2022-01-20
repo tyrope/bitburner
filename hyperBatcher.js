@@ -130,7 +130,7 @@ function calcBatches(ns, delay, runTimes, threads, src) {
  * @param {Array} execs         Array of [Number,String]; indicating delay and type of script.
  * @param {Number} profit       The expected money to get per hack.
  * @param {String} affectStocks A string containing "H" to have hacks influence stocks, "G" to have grow influence stocks.
- * @return {Boolean} True if we cancelled early, requiring recalculation before restarting.
+ * @return {Promise<boolean>} True if we cancelled early, requiring recalculation before restarting.
 **/
 async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, affectStocks) {
     ns.print(`INFO: Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, firstLand)}, yielding ${ns.nFormat(profit, "0.00a")}`);
