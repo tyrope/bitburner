@@ -14,59 +14,89 @@ export function autocomplete(data, args) {
 
 /** Calculate the amount of hack threads needed for a batch attack.
  * @param {NS} ns
- * @param {String} tgt      The hostname of the target server.
- * @param {Number} moneyPct The percent of the target's maximum money we want to hack.
- * @return {Number[]}       The amount of threads, hack duration, security increase, actual money hacked.
+ * @param {String} tgt          The hostname of the target server.
+ * @param {Number} moneyPct     The percent of the target's maximum money we want to hack.
+ * @param {Boolean} hasFormulas Whether or not the player has access to formulas.
+ * @return {Number[]}           The amount of threads, hack duration, security increase, actual money hacked.
  */
-function calcHack(ns, tgt, moneyPct) {
+function calcHack(ns, tgt, moneyPct, hasFormulas) {
     // Calculate the hack.
     let maxMoney = ns.getServerMaxMoney(tgt);
-    if (moneyPct > 1) { moneyPct /= 100; }
-    let srv = ns.getServer(tgt);
-    srv.hackDifficulty = srv.minDifficulty;
-    srv.moneyAvailable = srv.moneyMax;
-    let p = ns.getPlayer();
+    while (moneyPct > 1) { moneyPct /= 100; }
+    let threads;
+    let timeToHack;
+    let fractionStole;
 
-    let threads = Math.floor(moneyPct / ns.formulas.hacking.hackPercent(srv, p));
+    if (!hasFormulas) {
+        // Base on current amounts.
+        threads = Math.max(1, Math.floor(ns.hackAnalyzeThreads(tgt, moneyPct)));
+        timeToHack = ns.getHackTime(tgt);
+        fractionStole = ns.hackAnalyze(tgt);
+    } else {
+        // Use formulas to be accurate.
+        let srv = ns.getServer(tgt);
+        srv.hackDifficulty = srv.minDifficulty;
+        srv.moneyAvailable = srv.moneyMax;
+        let p = ns.getPlayer();
+
+        threads = Math.floor(moneyPct / ns.formulas.hacking.hackPercent(srv, p));
+        timeToHack = ns.formulas.hacking.hackTime(srv, p);
+        fractionStole = ns.formulas.hacking.hackPercent(srv, p);
+    }
     return [
         threads,
-        ns.formulas.hacking.hackTime(srv, p),
+        timeToHack,
         ns.hackAnalyzeSecurity(threads),
-        ns.formulas.hacking.hackPercent(srv, p) * threads * maxMoney
+        fractionStole * threads * maxMoney
     ];
 }
 
 /** Calculate the amount of grow threads needed for a batch attack.
  * @param {NS} ns
- * @param {String} tgt The hostname of the target server.
- * @param {Number} money The amount of money we've stolen.
- * @return {Number[]}  The amount of threads, grow duration, security increase.
+ * @param {String} tgt          The hostname of the target server.
+ * @param {Number} money        The amount of money we've stolen.
+ * @param {Boolean} hasFormulas Whether or not the player has access to formulas.
+ * @return {Number[]}           The amount of threads, grow duration, security increase.
  */
-function calcGrow(ns, tgt, money) {
+function calcGrow(ns, tgt, money, hasFormulas) {
     let max = ns.getServerMaxMoney(tgt);
     let regrow = Math.max(1, max / (max - money));
-    let srv = ns.getServer(tgt);
-    srv.hackDifficulty = srv.minDifficulty;
-    srv.moneyAvailable = srv.moneyMax - money;
-    let p = ns.getPlayer();
-    let threads = Math.ceil(Math.log(regrow) / Math.log(ns.formulas.hacking.growPercent(srv, 1, p)));
+    let threads;
+    let timeToGrow;
+
+    if (!hasFormulas) {
+        threads = ns.growthAnalyze(tgt, regrow);
+        timeToGrow = ns.getGrowTime(tgt);
+    } else {
+        let srv = ns.getServer(tgt);
+        srv.hackDifficulty = srv.minDifficulty;
+        srv.moneyAvailable = srv.moneyMax - money;
+        let p = ns.getPlayer();
+        threads = Math.ceil(Math.log(regrow) / Math.log(ns.formulas.hacking.growPercent(srv, 1, p)));
+        timeToGrow = ns.formulas.hacking.growTime(srv, p);
+    }
+
     return [
         threads,
-        ns.formulas.hacking.growTime(srv, p),
+        timeToGrow,
         ns.growthAnalyzeSecurity(threads)
     ];
 }
 
 /** Calculate the amount of weaken threads needed for a batch attack.
  * @param {NS} ns
- * @param {String} tgt         The hostname of the target server.
- * @param {Number} secIncrease The amount of security we need to lower.
- * @return {Number[]}          The amount of threads, weaken duration, security decrease.
+ * @param {String} tgt          The hostname of the target server.
+ * @param {Number} secIncrease  The amount of security we need to lower.
+ * @param {Boolean} hasFormulas Whether or not the player has access to formulas.
+ * @return {Number[]}           The amount of threads, weaken duration, security decrease.
  */
-function calcWeaken(ns, tgt, secIncrease) {
+function calcWeaken(ns, tgt, secIncrease, hasFormulas) {
     // Calculate the weaken we need to counter hack.
     let secEffect = 0;
     let threads = Math.ceil(secIncrease / ns.weakenAnalyze(1));
+    if (!hasFormulas) {
+        return [threads, ns.getWeakenTime(tgt), secEffect];
+    }
     let srv = ns.getServer(tgt);
     srv.hackDifficulty = srv.minDifficulty;
     srv.moneyAvailable = srv.moneyMax;
@@ -194,16 +224,18 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, af
 }
 
 /** Calculate the threads needed to hack tgt for pct% of maxMoney.
+ * @param {NS} ns
  * @param  {String} tgt Server hostname to attack.
  * @param  {Number} pct Percentage of maxMoney we want to steal.
+ * @param  {Boolean} hasFormulas Whether or not the player has access to formulas.
  * @return {Object[3]}  Threads required, Script runtimes, money hacked per batch.
  */
-function calcThreads(ns, tgt, pct) {
+function calcThreads(ns, tgt, pct, hasFormulas) {
     let threads = Array(4), runTimes = Array(4); let sec; let profit;
-    [threads[0], runTimes[0], sec, profit] = calcHack(ns, tgt, pct);
-    [threads[1], runTimes[1]] = calcWeaken(ns, tgt, sec);
-    [threads[2], runTimes[2], sec] = calcGrow(ns, tgt, profit);
-    [threads[3], runTimes[3]] = calcWeaken(ns, tgt, sec);
+    [threads[0], runTimes[0], sec, profit] = calcHack(ns, tgt, pct, hasFormulas);
+    [threads[1], runTimes[1]] = calcWeaken(ns, tgt, sec, hasFormulas);
+    [threads[2], runTimes[2], sec] = calcGrow(ns, tgt, profit, hasFormulas);
+    [threads[3], runTimes[3]] = calcWeaken(ns, tgt, sec, hasFormulas);
 
     return [threads, runTimes, profit];
 }
@@ -227,10 +259,21 @@ export async function main(ns) {
 
     // Constants.
     const delay = 100;
+    const hasFormulas = ns.fileExists('Formulas.EXE', 'home');
+    if (!hasFormulas) {
+        if (
+            ns.getServerMaxMoney(tgt) != ns.getServerMoneyAvailable(tgt) ||
+            ns.getServerMinSecurityLevel(tgt) != ns.getServerSecurityLevel(tgt)
+        ) {
+            ns.tprint("ERROR: Targeting a non-prepped server without formulas.");
+            ns.exit();
+        }
+        ns.tprint("WARN: Formulas not found.");
+    }
 
     // Calculate the threads needed, runTimes and actual money hacked.
     let threads, runTimes, profit;
-    [threads, runTimes, profit] = calcThreads(ns, tgt, pct);
+    [threads, runTimes, profit] = calcThreads(ns, tgt, pct, hasFormulas);
 
     // If we're only simulating, we just got enough info.
     if (sim) {
@@ -283,10 +326,11 @@ export async function main(ns) {
  * @return {number[]} [RAM Usage, Time in ms, hacked money.]
  */
 export function getBatchInfo(ns, tgt, percent) {
-    let profit = calcHack(ns, tgt, percent)[3];
+    const hasFormulas = ns.fileExists('Formulas.EXE', 'home');
+    let profit = calcHack(ns, tgt, percent, hasFormulas)[3];
     percent = profit / ns.getServerMaxMoney(tgt);
-    let threads = calcThreads(ns, tgt, percent)[0];
-    let time = calcWeaken(ns, tgt, calcGrow(ns, tgt, profit)[2])[1] + 200;
+    let threads = calcThreads(ns, tgt, percent, hasFormulas)[0];
+    let time = calcWeaken(ns, tgt, calcGrow(ns, tgt, profit, hasFormulas)[2], hasFormulas)[1] + 200;
     return ([
         ns.getScriptRam('/batch/hack.js', "home") * threads[0] +
         ns.getScriptRam('/batch/grow.js', "home") * threads[2] +
