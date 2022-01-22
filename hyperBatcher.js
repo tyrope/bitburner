@@ -301,6 +301,11 @@ export async function main(ns) {
         }
     }
 
+    // Ensure there's no abort file lingering.
+    if (ns.fileExists(`ABORT_${tgt}.txt`, src)) {
+        ns.rm(`ABORT_${tgt}.txt`, src);
+    }
+
     let recalc = false;
     while (true) {
         if (recalc) {
