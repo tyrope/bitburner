@@ -6,5 +6,6 @@ lib/matrix.js
 bitburnerFiles.zip
 
 # A couple of scripts that are too volatile or specific to share.
+connectToNitesec.txt
 dispatcher.js
 test.js

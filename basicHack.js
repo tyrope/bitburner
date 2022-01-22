@@ -1,3 +1,10 @@
+// Target Hack (c)2022 Tyrope
+// usage: run targetHack.js [target]
+
+export function autocomplete(data, args) {
+    return [...data.servers];
+}
+
 /** @param {NS} ns **/
 export async function main(ns) {
     ns.disableLog('getServerSecurityLevel');
@@ -20,4 +27,3 @@ export async function main(ns) {
         await ns.hack(srv);
     }
 }
-
