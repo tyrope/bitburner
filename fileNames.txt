@@ -10,11 +10,13 @@ lib/netLib.js
 lib/tableMaker.js
 bigBrother.js
 gradeServers.js
+growXP.js
 hacknetIdler.js
 hyperBatcher.js
 maxThreads.js
 runAll.js
 serverGrower.js
+share.js
 srvMngr.js
 stocksStonks.js
 targetHack.js
