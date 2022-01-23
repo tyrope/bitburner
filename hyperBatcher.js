@@ -178,8 +178,10 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, af
         // Check if an abort has been called by hack.js
         if (ns.fileExists(`ABORT_${tgt}.txt`, src)) {
             ns.rm(`ABORT_${tgt}.txt`, src);
-            ns.print(`ERROR: [T+${timeFormat(ns, now() - batchStart, false)}]ABORT received from hack.js.`);
-            return true;
+            if (batchStart - now() <= 0) {
+                ns.print(`ERROR: [T+${timeFormat(ns, now() - batchStart, false)}]ABORT received from hack.js.`);
+                return true;
+            }
         }
 
         switch (x[1]) {
