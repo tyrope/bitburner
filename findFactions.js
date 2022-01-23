@@ -1,6 +1,12 @@
 import { getRoute } from '/lib/netLib.js'
 
-const FACTIONSERVERS = ["CSEC", "avmnite-02h", "I.I.I.I", "run4theh111z", "The-Cave"];
+const FACTIONSERVERS = [
+    "CSEC", //CyberSec
+    "avmnite-02h", //NiteSec
+    "I.I.I.I", //The Black Hand
+    "run4theh111z", //BitRunners
+    "The-Cave" // BitNode Destruction.
+];
 
 /** @param {NS} ns **/
 export async function main(ns) {
