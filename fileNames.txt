@@ -9,6 +9,7 @@ lib/format.js
 lib/netLib.js
 lib/tableMaker.js
 bigBrother.js
+findFactions.js
 gradeServers.js
 growXP.js
 hacknetIdler.js
