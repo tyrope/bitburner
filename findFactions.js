@@ -1,11 +1,11 @@
 import { getRoute } from '/lib/netLib.js'
 
 const FACTIONSERVERS = [
-    "CSEC", //CyberSec
-    "avmnite-02h", //NiteSec
-    "I.I.I.I", //The Black Hand
-    "run4theh111z", //BitRunners
-    "The-Cave" // BitNode Destruction.
+    "CSEC", //CyberSec (54) 
+    "avmnite-02h", //NiteSec (211) 
+    "I.I.I.I", //The Black Hand (348)
+    "run4theh111z", //BitRunners (521)
+    "The-Cave" // BitNode Destruction. (925)
 ];
 
 /** @param {NS} ns **/
