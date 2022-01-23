@@ -14,15 +14,16 @@ function deleteServers(ns, delAll) {
     let del = 0;
     let srvs = ns.getPurchasedServers();
     for (let i = 0; i < srvs.length; i++) {
-        if (ns.getServerMaxRam(srvs[i]) < 2**ns.args[0]) {
-            if (delAll || ns.getServerUsedRam(srvs[i]) == 0) {
-                ns.killall(srvs[i]);
-                ns.deleteServer(srvs[i]);
-            }
+        if (
+            (ns.getServerMaxRam(srvs[i]) < 2 ** ns.args[0]) &&
+            (delAll || ns.getServerUsedRam(srvs[i]) == 0)
+        ) {
+            ns.killall(srvs[i]);
+            ns.deleteServer(srvs[i]);
             del++;
         }
     }
-    ns.tprint(`Deleted ${del} servers.`);
+    ns.tprint(`Deleted ${del} server(s).`);
 }
 
 /** @param {NS} ns **/
