@@ -13,6 +13,7 @@ gradeServers.js
 growXP.js
 hacknetIdler.js
 hyperBatcher.js
+killEverywhere.js
 maxThreads.js
 runAll.js
 serverGrower.js
