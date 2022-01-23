@@ -163,7 +163,7 @@ function calcBatches(ns, delay, runTimes, threads, src) {
  * @return {Promise<boolean>} True if we cancelled early, requiring recalculation before restarting.
 **/
 async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, affectStocks) {
-    ns.print(`INFO: Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, firstLand)}, yielding ${ns.nFormat(profit, "0.00a")}`);
+    ns.print(`INFO: Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, firstLand)}\nTotal yield ${ns.nFormat(profit, "$0.00a")} over ${execs.length} scripts`);
     const currLvl = ns.getHackingLevel;
     const startLvl = currLvl();
     const now = ns.getTimeSinceLastAug;
