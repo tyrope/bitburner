@@ -5,13 +5,13 @@ If no profit can be made then the answer should be 0.
 Note that you have to buy the stock before you can sell it
 */
 
-/** @param {Number[]} prices */
-export function solver(prices) {
+/** @param {Number[]} input */
+export function solver(input) {
     let maxProfit = 0;
-    for (let buyDay = 0; buyDay < prices.length; buyDay++) {
-        for (let sellDay = buyDay + 1; sellDay < prices.length; sellDay++) {
-            if (prices[sellDay] - prices[buyDay] > maxProfit) {
-                maxProfit = prices[sellDay] - prices[buyDay];
+    for (let buyDay = 0; buyDay < input.length; buyDay++) {
+        for (let sellDay = buyDay + 1; sellDay < input.length; sellDay++) {
+            if (input[sellDay] - input[buyDay] > maxProfit) {
+                maxProfit = input[sellDay] - input[buyDay];
             }
         }
     }
