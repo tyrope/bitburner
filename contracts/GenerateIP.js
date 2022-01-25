@@ -1,10 +1,9 @@
 /* Generate IP Addresses
 Given the following string containing only digits,
-return an array with all possible valid IP address combinations that can be created from the string:
+return an array with all possible valid IP address combinations that can be created from the string.
 
-1784373157
-
-Note that an octet cannot begin with a '0' unless the number itself is actually 0. For example, '192.168.010.1' is not a valid IP.
+Note that an octet cannot begin with a '0' unless the number itself is actually 0.
+For example, '192.168.010.1' is not a valid IP.
 
 Examples:
 
@@ -35,10 +34,11 @@ export function solver(input) {
                     octets[3] = input.substr(octetLen1 + octetLen2 + octetLen3, octetLen4);
 
                     if (// Octets can't start with a 0.
-                        octets[0].startsWith("0") ||
-                        octets[1].startsWith("0") ||
-                        octets[2].startsWith("0") ||
-                        octets[3].startsWith("0") ||
+                        // unless the number itself is actually 0.
+                        (octets[0].startsWith("0") && octets[0] != "0") ||
+                        (octets[1].startsWith("0") && octets[1] != "0") ||
+                        (octets[2].startsWith("0") && octets[2] != "0") ||
+                        (octets[3].startsWith("0") && octets[3] != "0") ||
                         // Octets can't be above 255.
                         Number.parseInt(octets[0]) > 255 ||
                         Number.parseInt(octets[1]) > 255 ||
