@@ -26,6 +26,10 @@ function* injectOperator(input) {
 
     // Insert each operator.
     for (let op of OPERATORS) {
+        if (after.startsWith("0") && op != "") {
+            //Zero-padded numbers aren't allowed.
+            continue;
+        }
         if (after.length == 1) {
             // yield this string for evaluation.
             yield before + op + after;
