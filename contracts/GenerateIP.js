@@ -62,5 +62,5 @@ export async function main(ns) {
         ns.tprint("Usage: input(string)");
         ns.exit();
     }
-    ns.tprint("[" + solver(ns.args[0].toString()).join("], [") + "]");
+    ns.tprint("[" + solver(ns.args[0].toString()).join(", ") + "]");
 }
