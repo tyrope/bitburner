@@ -4,8 +4,7 @@ You are in a grid with 2 rows and 7 columns, and you are positioned in the top-l
 You are trying to reach the bottom-right corner of the grid, but you can only move down or right on each step.
 Determine how many unique paths there are from start to finish.
 
-NOTE: The data returned for this contract is an array with the number of rows and columns:
-[2, 7]
+The data returned for this contract is an array with the number of rows and columns.
 */
 
 export function solver(rows, columns) {
