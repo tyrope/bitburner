@@ -1,18 +1,12 @@
 /* Generate IP Addresses
-Given the following string containing only digits,
+Given a string containing only digits,
 return an array with all possible valid IP address combinations that can be created from the string.
 
 Note that an octet cannot begin with a '0' unless the number itself is actually 0.
 For example, '192.168.010.1' is not a valid IP.
-
-Examples:
-
-25525511135 -> [255.255.11.135, 255.255.111.35]
-1938718066 -> [193.87.180.66]
-
 */
 
-/** @param {String} input **/
+/** @param {String} input */
 export function solver(input) {
     let solutions = Array();
     let octets = Array(4);
@@ -58,9 +52,5 @@ export function solver(input) {
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    if (ns.args[0] == undefined) {
-        ns.tprint("Usage: input(string)");
-        ns.exit();
-    }
     ns.tprint("[" + solver(ns.args[0].toString()).join(", ") + "]");
 }
