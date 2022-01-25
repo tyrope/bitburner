@@ -10,16 +10,10 @@ export function getContracts(ns) {
 
     // Look at all servers.
     for (let srv of SERVERS) {
-        let contractList = Array();
-
         // Look at all files on this server.
         for (let file of ns.ls(srv, '.cct')) {
             // Add it to the list.
-            contractList.push(file);
-        }
-        // This server has contracts.
-        if (contractList.length > 0) {
-            CONTRACTS.push([srv, contractList]);
+            CONTRACTS.push([file, srv]);
         }
     }
     return CONTRACTS;
@@ -29,7 +23,7 @@ export function getContracts(ns) {
 export async function main(ns) {
     let ret = Array();
     for (let contracts of getContracts(ns)) {
-        ret.push(contracts[0] + ": " + contracts[1].join('\n'));
+        ret.push(contracts[0] + " on " + contracts[1]);
     }
     ns.tprint('\n' + ret.join('\n'));
 }
