@@ -11,6 +11,7 @@ contracts/generateIP.js
 contracts/locator.js
 contracts/minSumTriangle.js
 contracts/saneParens.js
+contracts/spiralize.js
 contracts/uniquePathsGridI.js
 lib/format.js
 lib/netLib.js
