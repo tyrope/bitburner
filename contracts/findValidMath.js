@@ -17,15 +17,20 @@ function* injectOperator(input) {
 
     // If we only have 1 digit, we can't put things inbetween.
     if (input.length == 1) {
-        yield [input, Number.parseInt(input)];
+        yield input;
     }
 
+    // Split the before and after
     let before = input.slice(0, 1);
     let after = input.slice(1);
+
+    // Insert each operator.
     for (let op of OPERATORS) {
         if (after.length == 1) {
+            // yield this string for evaluation.
             yield before + op + after;
         } else {
+            // If the after bit is more than 1 character, execute recursion.
             for (let ans of injectOperator(after)) {
                 yield before + op + ans;
             }
