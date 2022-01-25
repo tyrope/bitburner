@@ -1,0 +1,51 @@
+/* Find All Valid Math Expressions
+You are given a string which contains only digits between 0 and 9. You are also given a target number.
+Return all possible ways you can add the +, -, and * operators to the string such that it evaluates to the target number.
+The provided answer should be an array of strings containing the valid expressions.
+
+The data provided by this problem is an array with two elements.
+The first element is the string of digits, while the second element is the target number.
+NOTE: Numbers in the expression cannot have leading 0's. In other words, "1+01" is not a valid expression Examples:
+*/
+
+/**
+ * @param {String} input
+ * @returns {String, Number}
+ */
+function* injectOperator(input) {
+    const OPERATORS = ["", "+", "-", "*"];
+
+    // If we only have 1 digit, we can't put things inbetween.
+    if (input.length == 1) {
+        yield [input, Number.parseInt(input)];
+    }
+
+    let before = input.slice(0, 1);
+    let after = input.slice(1);
+    for (let op of OPERATORS) {
+        if (after.length == 1) {
+            yield before + op + after;
+        } else {
+            for (let ans of injectOperator(after)) {
+                yield before + op + ans;
+            }
+        }
+    }
+}
+
+/** @param {[String, Number]} input **/
+export function solver(input) {
+    let ret = Array();
+    for (let answer of injectOperator(input[0])) {
+        if (eval(answer) == input[1]) {
+            ret.push(answer);
+        }
+    }
+    return ret;
+}
+
+/** @param {NS} ns **/
+export async function main(ns) {
+    let input = JSON.parse(ns.args[0]);
+    ns.tprint(solver(input));
+}
