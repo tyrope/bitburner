@@ -1,6 +1,7 @@
 import { getContracts } from '/contracts/locator.js';
 
 import { solver as algoStocksI } from '/contracts/algoStocksI.js';
+import { solver as algoStocksII } from '/contracts/algoStocksII.js';
 import { solver as arrayJumping } from '/contracts/arrayJumping.js';
 import { solver as generateIP } from '/contracts/generateIP.js';
 import { solver as minSumTriangle } from '/contracts/minSumTriangle.js';
@@ -19,6 +20,10 @@ export async function main(ns) {
         switch (type) {
             case "Algorithmic Stock Trader I":
                 ns.codingcontract.attempt(algoStocksI(input), file, srv);
+                break;
+            case "Algorithmic Stock Trader II":
+                //ns.codingcontract.attempt(algoStocksII(input), file, srv);
+                ns.tprint("algoStocksII solver not finished.");
                 break;
             case "Array Jumping Game":
                 ns.codingcontract.attempt(arrayJumping(input), file, srv);

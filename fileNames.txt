@@ -6,6 +6,7 @@ batchv1/grow.js
 batchv1/hack.js
 batchv1/weaken.js
 contracts/algoStocksI.js
+contracts/algoStocksII.js
 contracts/arrayJumping.js
 contracts/autoSolver.js
 contracts/generateIP.js
