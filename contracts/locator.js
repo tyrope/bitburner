@@ -13,12 +13,9 @@ export function getContracts(ns) {
         let contractList = Array();
 
         // Look at all files on this server.
-        for (let file of ns.ls(srv)) {
-            // If this file's a contract.
-            if (file.endsWith("cct")) {
-                // Add it to the list.
-                contractList.push(file);
-            }
+        for (let file of ns.ls(srv, '.cct')) {
+            // Add it to the list.
+            contractList.push(file);
         }
         // This server has contracts.
         if (contractList.length > 0) {
