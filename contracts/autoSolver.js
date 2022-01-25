@@ -9,6 +9,7 @@ import { solver as minSumTriangle } from '/contracts/minSumTriangle.js';
 import { solver as saneParens } from '/contracts/saneParens.js';
 import { solver as spiralize } from '/contracts/spiralize.js';
 import { solver as uniquePathsGridI } from '/contracts/uniquePathsGridI.js';
+import { solver as uniquePathsGridII } from '/contracts/uniquePathsGridII.js';
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -49,6 +50,9 @@ export async function main(ns) {
                 //func = uniquePathsGridI;
                 ns.tprint("uniquePathsGridI's broken, dave.");
                 break;
+            case "Unique Paths in a Grid II":
+                //func = uniquePathsGridII;
+                ns.tprint("uniquePathsGridII solver not finished.");
                 break;
             default:
                 ns.tprint(`No solver found for ${file}@${srv} (Type: ${type})`);
