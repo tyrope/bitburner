@@ -8,7 +8,7 @@ NOTE: The data returned for this contract is an array with the number of rows an
 [2, 7]
 */
 
-export function solver(ns, rows, columns) {
+export function solver(rows, columns) {
     return rows * (columns - 1);
 }
 
@@ -18,5 +18,5 @@ export async function main(ns) {
         ns.tprint("Usage: rows (number), columns (number)");
         ns.exit();
     }
-    ns.tprint(solver(ns, ns.args[0], ns.args[1]));
+    ns.tprint(solver(ns.args[0], ns.args[1]));
 }
