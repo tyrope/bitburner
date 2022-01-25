@@ -29,8 +29,7 @@ export async function main(ns) {
             case "Array Jumping Game":
                 func = arrayJumping;
             case "Find All Valid Math Expressions":
-                //func = findValidMath;
-                ns.tprint("findValidMath solver not finished.");
+                func = findValidMath;
                 break;
             case "Generate IP Addresses":
                 func = generateIP;
