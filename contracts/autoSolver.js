@@ -46,7 +46,9 @@ export async function main(ns) {
                 ns.tprint("spiralize solver not finished.");
                 break;
             case "Unique Paths in a Grid I":
-                func = uniquePathsGridI;
+                //func = uniquePathsGridI;
+                ns.tprint("uniquePathsGridI's broken, dave.");
+                break;
                 break;
             default:
                 ns.tprint(`No solver found for ${file}@${srv} (Type: ${type})`);
