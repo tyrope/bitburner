@@ -6,6 +6,7 @@ import { solver as algoStocksIV } from '/contracts/algoStocksIV.js';
 import { solver as arrayJumping } from '/contracts/arrayJumping.js';
 import { solver as findValidMath } from '/contracts/findValidMath.js';
 import { solver as generateIP } from '/contracts/generateIP.js';
+import { solver as largestPrimeFactor } from '/contracts/largestPrimeFactor.js';
 import { solver as mergeOverlap } from '/contracts/mergeOverlap.js';
 import { solver as minSumTriangle } from '/contracts/minSumTriangle.js';
 import { solver as saneParens } from '/contracts/saneParens.js';
@@ -38,6 +39,10 @@ export async function main(ns) {
                 break;
             case "Find All Valid Math Expressions":
                 func = findValidMath;
+                break;
+            case "Find Largest Prime Factor":
+                //func = largestPrimeFactor;
+                ns.tprint("WARN: largestPrimeFactor solver not finished.");
                 break;
             case "Generate IP Addresses":
                 func = generateIP;
