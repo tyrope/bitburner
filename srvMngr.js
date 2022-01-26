@@ -1,5 +1,5 @@
 // Server Manager (c) 2022 Tyrope
-// Usage: run srvMngr.js [RAM] [mode]
+// Usage: run srvMngr.js [RAM] [mode] (amount) (name)
 // parameter RAM: How much RAM you want (2**n)
 // parameter mode:
 //  0 = Check price of 1 server with RAM.
