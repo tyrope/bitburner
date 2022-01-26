@@ -11,6 +11,7 @@ contracts/arrayJumping.js
 contracts/autoSolver.js
 contracts/generateIP.js
 contracts/locator.js
+contracts/mergeOverlap.js
 contracts/minSumTriangle.js
 contracts/saneParens.js
 contracts/spiralize.js

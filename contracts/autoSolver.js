@@ -5,6 +5,7 @@ import { solver as algoStocksII } from '/contracts/algoStocksII.js';
 import { solver as arrayJumping } from '/contracts/arrayJumping.js';
 import { solver as findValidMath } from '/contracts/findValidMath.js';
 import { solver as generateIP } from '/contracts/generateIP.js';
+import { solver as mergeOverlap } from '/contracts/mergeOverlap.js';
 import { solver as minSumTriangle } from '/contracts/minSumTriangle.js';
 import { solver as saneParens } from '/contracts/saneParens.js';
 import { solver as spiralize } from '/contracts/spiralize.js';
@@ -35,12 +36,15 @@ export async function main(ns) {
             case "Generate IP Addresses":
                 func = generateIP;
                 break;
+            case "Merge Overlapping Intervals":
+                func = mergeOverlap;
+                break;
             case "Minimum Path Sum in a Triangle":
                 func = minSumTriangle;
                 break;
             case "Sanitize Parentheses in Expression":
                 //func = saneParens;
-                ns.tprint("WARN: saneParens solver not finished.");
+                ns.tprint("WARN: saneParens solver is broken.");
                 break;
             case "Spiralize Matrix":
                 //func = spiralize;
@@ -54,14 +58,14 @@ export async function main(ns) {
                 ns.tprint("WARN: uniquePathsGridII solver not finished.");
                 break;
             default:
-                ns.tprint(`WARN: No solver found for ${file}@${srv} (Type: ${type})`);
+                ns.tprint(`ERROR: No solver found for ${file}@${srv} (Type: ${type})`);
                 break;
         }
         if (func != null) {
             reward = ns.codingcontract.attempt(func(input), file, srv, { returnReward: true });
             if (reward == "") {
                 ns.tprint(
-                    `ERROR: Failed ${file}@${srv} Type: ${type}` +
+                    `FAILURE: Failed ${file}@${srv} Type: ${type}` +
                     ` (${ns.codingcontract.getNumTriesRemaining(file, srv)} tries remaining)`
                 );
             } else {
