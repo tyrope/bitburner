@@ -55,7 +55,7 @@ export async function main(ns) {
                 break;
             case "Sanitize Parentheses in Expression":
                 //func = saneParens;
-                ns.tprint("WARN: saneParens solver is broken.");
+                ns.tprint("ERROR: saneParens solver is broken.");
                 break;
             case "Spiralize Matrix":
                 //func = spiralize;
@@ -69,18 +69,18 @@ export async function main(ns) {
                 ns.tprint("WARN: uniquePathsGridII solver not finished.");
                 break;
             default:
-                ns.tprint(`ERROR: No solver found for ${file}@${srv} (Type: ${type})`);
+                ns.tprint(`ERROR: No solver found for [${file}@${srv}]${type}`);
                 break;
         }
         if (func != null) {
             reward = ns.codingcontract.attempt(func(input), file, srv, { returnReward: true });
             if (reward == "") {
                 ns.tprint(
-                    `FAILURE: Failed ${file}@${srv} Type: ${type}` +
+                    `FAILURE: [${file}@${srv}]${type} - ` +
                     ` (${ns.codingcontract.getNumTriesRemaining(file, srv)} tries remaining)`
                 );
             } else {
-                ns.tprint(`SUCCESS: [${file}@${srv}]${reward} `);
+                ns.tprint(`INFO: [${file}@${srv}]${type} - ${reward}`);
             }
         }
     }
