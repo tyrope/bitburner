@@ -60,7 +60,7 @@ function calcHack(ns, tgt, moneyPct, hasFormulas) {
  */
 function calcGrow(ns, tgt, money, hasFormulas) {
     let max = ns.getServerMaxMoney(tgt);
-    let regrow = Math.max(1, max / (max - money));
+    let regrow = max / (max - Math.max(money, 1));
     let threads;
     let timeToGrow;
 
