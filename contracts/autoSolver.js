@@ -40,21 +40,21 @@ export async function main(ns) {
                 break;
             case "Sanitize Parentheses in Expression":
                 //func = saneParens;
-                ns.tprint("saneParens solver not finished.");
+                ns.tprint("WARN: saneParens solver not finished.");
                 break;
             case "Spiralize Matrix":
                 //func = spiralize;
-                ns.tprint("spiralize solver not finished.");
+                ns.tprint("WARN: spiralize solver not finished.");
                 break;
             case "Unique Paths in a Grid I":
                 func = uniquePathsGridI;
                 break;
             case "Unique Paths in a Grid II":
                 //func = uniquePathsGridII;
-                ns.tprint("uniquePathsGridII solver not finished.");
+                ns.tprint("WARN: uniquePathsGridII solver not finished.");
                 break;
             default:
-                ns.tprint(`No solver found for ${file}@${srv} (Type: ${type})`);
+                ns.tprint(`WARN: No solver found for ${file}@${srv} (Type: ${type})`);
                 break;
         }
         if (func != null) {
