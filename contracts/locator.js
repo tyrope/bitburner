@@ -23,7 +23,8 @@ export function getContracts(ns) {
 export async function main(ns) {
     let ret = Array();
     for (let contracts of getContracts(ns)) {
-        ret.push(contracts[0] + " on " + contracts[1]);
+        let type = ns.codingcontract.getContractType(contracts[0], contracts[1]);
+        ret.push(`${contracts[1]}: ${contracts[0]} (type: ${type})`);
     }
     ns.tprint('\n' + ret.join('\n'));
 }
