@@ -30,6 +30,7 @@ export async function main(ns) {
                 break;
             case "Array Jumping Game":
                 func = arrayJumping;
+                break;
             case "Find All Valid Math Expressions":
                 func = findValidMath;
                 break;
