@@ -2,6 +2,7 @@ import { getContracts } from '/contracts/locator.js';
 
 import { solver as algoStocksI } from '/contracts/algoStocksI.js';
 import { solver as algoStocksII } from '/contracts/algoStocksII.js';
+import { solver as algoStocksIV } from '/contracts/algoStocksIV.js';
 import { solver as arrayJumping } from '/contracts/arrayJumping.js';
 import { solver as findValidMath } from '/contracts/findValidMath.js';
 import { solver as generateIP } from '/contracts/generateIP.js';
@@ -27,6 +28,10 @@ export async function main(ns) {
                 break;
             case "Algorithmic Stock Trader II":
                 func = algoStocksII;
+                break;
+            case "Algorithmic Stock Trader IV":
+                //func = algoStocksIV;
+                ns.tprint("WARN: algoStocksIV solver not finished.");
                 break;
             case "Array Jumping Game":
                 func = arrayJumping;
