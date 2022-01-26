@@ -15,9 +15,7 @@ function choose(n, k) {
 }
 /** @param {Number[]} input **/
 export function solver(input) {
-    // [23:53] Photino Decay: it's (rows-1)*(columns-1) choose (rows-1)
-    // [00:08] Photino Decay: https://en.wikipedia.org/wiki/Combination
-    let n = (input[0] - 1) * (input[1] - 1);
+    let n = (input[0] - 1) + (input[1] - 1);
     return choose(n, input[0] - 1);
 }
 

@@ -47,8 +47,7 @@ export async function main(ns) {
                 ns.tprint("spiralize solver not finished.");
                 break;
             case "Unique Paths in a Grid I":
-                //func = uniquePathsGridI;
-                ns.tprint("uniquePathsGridI's broken, dave.");
+                func = uniquePathsGridI;
                 break;
             case "Unique Paths in a Grid II":
                 //func = uniquePathsGridII;
