@@ -13,9 +13,13 @@ export function solver(input) {
         return 1;
     }
 
+    // If we can't jump at all, we've lost (on this path).
+    if (input[0] == 0) {
+        return 0;
+    }
+
     // If we can't, check against ALL of our possible jumps.
     for (let i = 1; i < input[0]; i++) {
-
         // If one of these jumps wins, we win.
         if (solver(input.slice(i)) == 1) {
             return 1;
