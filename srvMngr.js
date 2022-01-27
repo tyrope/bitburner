@@ -43,13 +43,13 @@ async function purchase(ns) {
 
 /** @param {NS} ns **/
 function price(ns) {
-    ns.tprint(`A server with ${ns.nFormat((2 ** ns.args[0]) * 10e8, "0.0b")} RAM costs ${ns.nFormat(ns.getPurchasedServerCost(2 ** ns.args[0]), "0.0a")}`);
+    ns.tprint(`A server with ${ns.nFormat((2 ** ns.args[0]) * 1024 ** 3, "0.0ib")} RAM costs ${ns.nFormat(ns.getPurchasedServerCost(2 ** ns.args[0]), "$0.000a")}`);
 }
 
 /** @param {NS} ns **/
 export async function main(ns) {
     if (ns.args[1] === undefined) {
-        ns.tprint("Usage: RAM (number), mode (number), amount (number, optional if mode != 3), name (string)");
+        ns.tprint("Usage: RAM (number), mode (number), amount (number, ignored if mode != 3), name (string, ignored if mode != 3)");
         ns.exit();
         return;
     }
