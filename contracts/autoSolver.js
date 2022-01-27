@@ -54,8 +54,7 @@ export async function main(ns) {
                 func = minSumTriangle;
                 break;
             case "Sanitize Parentheses in Expression":
-                //func = saneParens;
-                ns.tprint("ERROR: saneParens solver is broken.");
+                func = saneParens;
                 break;
             case "Spiralize Matrix":
                 //func = spiralize;
