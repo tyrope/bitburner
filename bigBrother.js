@@ -1,4 +1,4 @@
-import { makeTable } from '/lib/tableMaker.js'
+import { squishLines, makeTable } from '/lib/tableMaker.js'
 
 export function autocomplete(data, args) {
     return [...data.servers];
@@ -29,6 +29,7 @@ export async function main(ns) {
             ]);
         }
         ns.print("\n" + makeTable(serverData));
+        squishLines(ns.getScriptName() + " " + ns.args.join(" "));
         await ns.sleep(1000);
     }
 }

@@ -3,7 +3,7 @@
 // Parameter percent: The % of maxMoney the batch will be stealing. (default: 20)
 // Parameter topOnly: If given a number, will limit the amount of servers to only the top n. (default: Infinity)
 
-import { makeTable } from '/lib/tableMaker.js'
+import { squishLines, makeTable } from '/lib/tableMaker.js'
 import { timeFormat } from '/lib/format.js'
 import { getBatchInfo } from 'hyperBatcher.js'
 import { getServers } from '/lib/netLib.js'
@@ -41,6 +41,7 @@ export async function main(ns) {
         data.push(getServerInfo(ns, server, pct));
     }
     ns.print(makeTable(data, false));
+    squishLines(ns.getScriptName() + " " + ns.args.join(" "));
 }
 
 /** Calculate the score of 1 server.
