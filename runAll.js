@@ -7,34 +7,38 @@ import { getServers } from '/lib/netLib.js'
 
 let scriptName;
 let scriptArgs;
+let tools;
 
 export function autocomplete(data, args) {
     return [...data.servers];
 }
 
-/** @param {NS} ns **/
+/** 
+ * @param {NS} ns
+ * @return {Function[]}
+**/
 function getTools(ns) {
     let ret = [];
     if (ns.fileExists('BruteSSH.exe', 'home')) {
-        ret.push('ssh');
+        ret.push(ns.brutessh);
     }
     if (ns.fileExists('FTPCrack.exe', 'home')) {
-        ret.push('ftp');
+        ret.push(ns.ftpcrack);
     }
     if (ns.fileExists('HTTPWorm.exe', 'home')) {
-        ret.push('http');
+        ret.push(ns.httpworm);
     }
     if (ns.fileExists('SQLInject.exe', 'home')) {
-        ret.push('sql');
+        ret.push(ns.sqlinject);
     }
     if (ns.fileExists('relaySMTP.exe', 'home')) {
-        ret.push('smtp');
+        ret.push(ns.relaysmtp);
     }
     return ret;
 }
 
 /** @param {NS} ns **/
-function getRoot(ns, server, tools) {
+function getRoot(ns, server) {
     if (ns.hasRootAccess(server) == true) {
         // We already have root you dumbdumb.
         return true;
@@ -47,23 +51,7 @@ function getRoot(ns, server, tools) {
 
     // Don't you wish we could just ns.run(tools[i])? Yeah me too.
     for (let i = 0; i < ports; i++) {
-        switch (tools[i]) {
-            case 'ssh':
-                ns.brutessh(server);
-                break;
-            case 'ftp':
-                ns.ftpcrack(server);
-                break;
-            case 'http':
-                ns.httpworm(server);
-                break;
-            case 'sql':
-                ns.sqlinject(server);
-                break;
-            case 'smtp':
-                ns.relaysmtp(server);
-                break;
-        }
+        tools[i]();
     }
 
     // FIRE ZE MISSILES!
@@ -77,8 +65,8 @@ function getRoot(ns, server, tools) {
 }
 
 /** @param {NS} ns **/
-async function control(ns, server, tools) {
-    if (getRoot(ns, server, tools) == false) {
+async function control(ns, server) {
+    if (getRoot(ns, server) == false) {
         // No root, no scripts.
         return;
     }
@@ -116,12 +104,12 @@ export async function main(ns) {
         scriptArgs = Array();
     }
 
-    let tools = getTools(ns);
+    tools = getTools(ns);
 
     //TODO: Allow for blacklisting.
     for (let server of getServers(ns)) {
         ns.print(server);
-        await control(ns, server, tools);
+        await control(ns, server);
     }
 
     ns.tprint("Scan complete.");
