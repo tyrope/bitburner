@@ -38,7 +38,8 @@ export async function main(ns) {
                 func = arrayJumping;
                 break;
             case "Find All Valid Math Expressions":
-                func = findValidMath;
+                //func = findValidMath;
+                ns.tprint("ERROR: findValidMath solver gave wrong answers.");
                 break;
             case "Find Largest Prime Factor":
                 //func = largestPrimeFactor;
