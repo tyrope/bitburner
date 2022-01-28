@@ -32,18 +32,18 @@ export async function main(ns) {
                 break;
             case "Algorithmic Stock Trader IV":
                 //func = algoStocksIV;
-                ns.tprint("WARN: algoStocksIV solver not finished.");
+                ns.tprint("INFO: algoStocksIV solver not finished.");
                 break;
             case "Array Jumping Game":
                 func = arrayJumping;
                 break;
             case "Find All Valid Math Expressions":
                 //func = findValidMath;
-                ns.tprint("ERROR: findValidMath solver gave wrong answers.");
+                ns.tprint("INFO: findValidMath solver is disabled.");
                 break;
             case "Find Largest Prime Factor":
                 //func = largestPrimeFactor;
-                ns.tprint("WARN: largestPrimeFactor solver not finished.");
+                ns.tprint("INFO: largestPrimeFactor solver not finished.");
                 break;
             case "Generate IP Addresses":
                 func = generateIP;
@@ -59,14 +59,14 @@ export async function main(ns) {
                 break;
             case "Spiralize Matrix":
                 //func = spiralize;
-                ns.tprint("WARN: spiralize solver not finished.");
+                ns.tprint("INFO: spiralize solver not finished.");
                 break;
             case "Unique Paths in a Grid I":
                 func = uniquePathsGridI;
                 break;
             case "Unique Paths in a Grid II":
                 //func = uniquePathsGridII;
-                ns.tprint("WARN: uniquePathsGridII solver not finished.");
+                ns.tprint("INFO: uniquePathsGridII solver not finished.");
                 break;
             default:
                 ns.tprint(`ERROR: No solver found for [${file}@${srv}]${type}`);
@@ -75,12 +75,18 @@ export async function main(ns) {
         if (func != null) {
             reward = ns.codingcontract.attempt(func(input), file, srv, { returnReward: true });
             if (reward == "") {
-                ns.tprint(
-                    `FAILURE: [${file}@${srv}]${type} - ` +
-                    ` (${ns.codingcontract.getNumTriesRemaining(file, srv)} tries remaining)`
-                );
+                if (ns.fileExists(file, srv)) {
+                    ns.tprint(
+                        `FAILURE: [${file}@${srv}]${type} - ` +
+                        ` (${ns.codingcontract.getNumTriesRemaining(file, srv)} tries remaining)`
+                    );
+                } else {
+                    ns.tprint(
+                        `FAILURE: [${file}@${srv}]${type} - Contract self-destructed.`
+                    );
+                }
             } else {
-                ns.tprint(`INFO: [${file}@${srv}]${type} - ${reward}`);
+                ns.tprint(`SUCCESS: [${file}@${srv}]${type} - ${reward}`);
             }
         }
     }
