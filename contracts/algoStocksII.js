@@ -7,13 +7,10 @@ In other words, you must sell the stock before you buy it again.
 If no profit can be made, then the answer should be 0
 */
 
-/**
- * @param {Number[]} input
-*/
+/** @param {Number[]} input */
 export function solver(input) {
     let hasStock = false;
     let profit = 0;
-    let lastBuy;
     for (let day = 0; day < input.length; day++) {
         // If we have stock and the price is dropping.
         if (hasStock && input[day] > input[day + 1]) {
