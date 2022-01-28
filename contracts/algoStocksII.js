@@ -22,7 +22,6 @@ export function solver(input) {
         // If we don't have stock, and the price is rising.
         if (!hasStock && input[day] < input[day + 1]) {
             // Buy.
-            lastBuy = input[day];
             hasStock = true;
             profit -= input[day];
         }
