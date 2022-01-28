@@ -11,6 +11,7 @@ import { solver as largestPrimeFactor } from '/contracts/largestPrimeFactor.js';
 import { solver as mergeOverlap } from '/contracts/mergeOverlap.js';
 import { solver as minSumTriangle } from '/contracts/minSumTriangle.js';
 import { solver as saneParens } from '/contracts/saneParens.js';
+import { solver as totalWaysToSum } from '/contracts/totalWaysToSum.js';
 import { solver as spiralize } from '/contracts/spiralize.js';
 import { solver as uniquePathsGridI } from '/contracts/uniquePathsGridI.js';
 import { solver as uniquePathsGridII } from '/contracts/uniquePathsGridII.js';
@@ -62,6 +63,9 @@ export async function main(ns) {
             case "Sanitize Parentheses in Expression":
                 func = saneParens;
                 break;
+            case "Total Ways to Sum":
+                //func = totalWaysToSum;
+                ns.tprint("INFO: totalWaysToSum solver not finished.");
             case "Spiralize Matrix":
                 //func = spiralize;
                 ns.tprint("INFO: spiralize solver not finished.");
