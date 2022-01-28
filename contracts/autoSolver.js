@@ -2,6 +2,7 @@ import { getContracts } from '/contracts/locator.js';
 
 import { solver as algoStocksI } from '/contracts/algoStocksI.js';
 import { solver as algoStocksII } from '/contracts/algoStocksII.js';
+import { solver as algoStocksIII } from '/contracts/algoStocksIII.js';
 import { solver as algoStocksIV } from '/contracts/algoStocksIV.js';
 import { solver as arrayJumping } from '/contracts/arrayJumping.js';
 import { solver as findValidMath } from '/contracts/findValidMath.js';
@@ -29,6 +30,10 @@ export async function main(ns) {
                 break;
             case "Algorithmic Stock Trader II":
                 func = algoStocksII;
+                break;
+            case "Algorithmic Stock Trader III":
+                //func = algoStocksIII;
+                ns.tprint("INFO: algoStocksIII solver not finished.");
                 break;
             case "Algorithmic Stock Trader IV":
                 //func = algoStocksIV;
