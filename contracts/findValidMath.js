@@ -4742,10 +4742,6 @@ function* injectOperator(input) {
 
     // Insert each operator.
     for (let op of OPERATORS) {
-        if (after.startsWith("0") && op != "") {
-            //Zero-padded numbers aren't allowed.
-            continue;
-        }
         if (after.length == 1) {
             // yield this string for evaluation.
             yield before + op + after;
@@ -4762,7 +4758,17 @@ function* injectOperator(input) {
 export function solver(input) {
     let ret = Array();
     for (let answer of injectOperator(input[0])) {
-        if (eval(answer) == input[1]) {
+
+        // No zero-padded numbers!
+        let zeroPadded = false;
+        for (let i = 0; i < answer.length; i++) {
+            if (answer[i] == "0" && "123456798".includes(answer[i + 1])) {
+                zeroPadded = true;
+                continue;
+            }
+        }
+        //If this is a correct answer, push it to the results.
+        if (!zeroPadded && eval(answer) == input[1]) {
             ret.push(answer);
         }
     }
