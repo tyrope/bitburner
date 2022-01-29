@@ -49,9 +49,9 @@ function getRoot(ns, server) {
         return false;
     }
 
-    // Don't you wish we could just ns.run(tools[i])? Yeah me too.
+    // Don't you wish we could just run tools[i]()? WELL YOU CAN!
     for (let i = 0; i < ports; i++) {
-        tools[i]();
+        tools[i](server);
     }
 
     // FIRE ZE MISSILES!
