@@ -53,7 +53,7 @@ export function solver(input) {
                     "+-*".includes(answer[i - 1])
                 )) {
                 zeroPadded = true;
-                continue;
+                break;
             }
         }
 
