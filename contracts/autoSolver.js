@@ -44,8 +44,7 @@ export async function main(ns) {
                 func = arrayJumping;
                 break;
             case "Find All Valid Math Expressions":
-                //func = findValidMath;
-                ns.tprint("INFO: findValidMath solver is disabled.");
+                func = findValidMath;
                 break;
             case "Find Largest Prime Factor":
                 //func = largestPrimeFactor;
