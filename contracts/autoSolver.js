@@ -74,8 +74,7 @@ export async function main(ns) {
                 func = uniquePathsGridI;
                 break;
             case "Unique Paths in a Grid II":
-                //func = uniquePathsGridII;
-                ns.tprint("INFO: uniquePathsGridII solver not finished.");
+                func = uniquePathsGridII;
                 break;
             default:
                 ns.tprint(`ERROR: No solver found for [${file}@${srv}]${type}`);
