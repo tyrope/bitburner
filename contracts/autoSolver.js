@@ -66,9 +66,9 @@ export async function main(ns) {
             case "Total Ways to Sum":
                 //func = totalWaysToSum;
                 ns.tprint("INFO: totalWaysToSum solver not finished.");
+                break;
             case "Spiralize Matrix":
-                //func = spiralize;
-                ns.tprint("INFO: spiralize solver not finished.");
+                func = spiralize;
                 break;
             case "Unique Paths in a Grid I":
                 func = uniquePathsGridI;
