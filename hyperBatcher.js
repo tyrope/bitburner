@@ -12,6 +12,8 @@ export function autocomplete(data, args) {
     return [...data.servers];
 }
 
+let scriptStart;
+
 /** Calculate the amount of hack threads needed for a batch attack.
  * @param {NS} ns
  * @param {String} tgt          The hostname of the target server.
@@ -163,23 +165,24 @@ function calcBatches(ns, delay, runTimes, threads, src) {
  * @return {Promise<boolean>} True if we cancelled early, requiring recalculation before restarting.
 **/
 async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, affectStocks) {
-    ns.print(`INFO: Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, firstLand)}\nTotal yield ${ns.nFormat(profit, "$0.00a")} over ${execs.length} scripts`);
     const currLvl = ns.getHackingLevel;
     const startLvl = currLvl();
     const now = ns.getTimeSinceLastAug;
     const batchStart = now();
 
-    let script = ""; let t; let slept = 0; let affect;
+    ns.print(`INFO: Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, now() + firstLand - scriptStart)}\nTotal yield ${ns.nFormat(profit, "$0.00a")} over ${execs.length} scripts`);
+
+    let script = ""; let t; let slept = 0;
     for (let x of execs) {
         if (currLvl() != startLvl) {
-            ns.print(`WARNING: [T+${timeFormat(ns, now() - batchStart, false)}]Hack level increased, aborting hack.`);
+            ns.print(`WARNING: [T+${timeFormat(ns, now() - scriptStart, false)}]Hack level increased, aborting hack.`);
             return true;
         }
         // Check if an abort has been called by hack.js
         if (ns.fileExists(`ABORT_${tgt}.txt`, src)) {
             ns.rm(`ABORT_${tgt}.txt`, src);
             if (batchStart - now() <= 0) {
-                ns.print(`ERROR: [T+${timeFormat(ns, now() - batchStart, false)}]ABORT received from hack.js.`);
+                ns.print(`ERROR: [T+${timeFormat(ns, now() - scriptStart, false)}]ABORT received from hack.js.`);
                 return true;
             }
         }
@@ -204,20 +207,15 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, af
         }
 
         if (x[0] - slept < 0) {
-            ns.print(`ERROR: [T+${timeFormat(ns, now() - batchStart, false)}]Trying to sleep a negative amount. We've fallen behind!`);
+            ns.print(`ERROR: [T+${timeFormat(ns, now() - scriptStart, false)}]Trying to sleep a negative amount. We've fallen behind!`);
             return true;
         }
         await ns.sleep(x[0] - slept);
         slept = x[0];
 
-        /*if (Math.abs(slept - (now() - batchStart)) > 0.2) {
-            ns.print(`WARNING: Aborting script(${x[1]}) due to drift. Expected slept: ${x[0]}, actual: ${now() - batchStart} (${Math.abs((now() - batchStart) - x[0])} drift)`);
-            return false;
-        }*/
-
         // Ensure we're not bumping into RAM limitations
         if (ns.getServerMaxRam(src) - ns.getServerUsedRam(src) < ns.getScriptRam(script, src)) {
-            ns.print(`ERROR: [T+${timeFormat(ns, now() - batchStart, false)}]Aborting, out of RAM.`);
+            ns.print(`ERROR: [T+${timeFormat(ns, now() - scriptStart, false)}]Aborting, out of RAM.`);
             return true;
         }
         ns.exec(script, src, t, tgt, profit, affectStocks.includes(x[1]), now());
@@ -244,6 +242,7 @@ function calcThreads(ns, tgt, pct, hasFormulas) {
 
 /** @param {NS} ns **/
 export async function main(ns) {
+    scriptStart = ns.getTimeSinceLastAug();
     ns.clearLog();
     ns.disableLog('ALL');
     //Parameter parsing.
