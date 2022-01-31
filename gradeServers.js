@@ -41,6 +41,7 @@ export async function main(ns) {
         data.push(getServerInfo(ns, server, pct));
     }
     ns.print(makeTable(data, false));
+    await ns.sleep(10);
     squishLines(ns.getScriptName() + " " + ns.args.join(" "));
 }
 
