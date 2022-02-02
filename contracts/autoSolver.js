@@ -13,6 +13,7 @@ import { solver as minSumTriangle } from '/contracts/minSumTriangle.js';
 import { solver as saneParens } from '/contracts/saneParens.js';
 import { solver as totalWaysToSum } from '/contracts/totalWaysToSum.js';
 import { solver as spiralize } from '/contracts/spiralize.js';
+import { solver as subarrayMaxSum } from '/contracts/subarrayMaxSum.js';
 import { solver as uniquePathsGridI } from '/contracts/uniquePathsGridI.js';
 import { solver as uniquePathsGridII } from '/contracts/uniquePathsGridII.js';
 
@@ -61,6 +62,10 @@ export async function main(ns) {
                 break;
             case "Sanitize Parentheses in Expression":
                 func = saneParens;
+                break;
+            case "Subarray with Maximum Sum":
+                //funct = subarrayMaxSum;
+                ns.tprint("INFO: subarrayMaxSum solver not finished.");
                 break;
             case "Total Ways to Sum":
                 //func = totalWaysToSum;
