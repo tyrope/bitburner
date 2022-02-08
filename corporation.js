@@ -159,7 +159,6 @@ async function buyMaterialsToLimit(ns, division, city, material, limit) {
     }
 
     const CorpAPI = eval("ns.corporation");
-    //const CorpAPI = ns.corporation;
 
     if (CorpAPI.hasWarehouse(division, city) == false) {
         return ns.print(`ERROR: ${division} is trying to buy materials in ${city}, but doesn't have a warehouse.`);
@@ -411,7 +410,7 @@ async function timeToGrow(ns, waitForEmployees) {
 
     // Buy 125 Hardware, 75 AI Cores, 27k Real Estate in each city.
     for (let city of CITIES) {
-        await buyMaterialsToLimit(ns, Divisions[0], city, ['Hardware', 'AI Cores', ' Real Estate'], [125, 75, 27e3]);
+        await buyMaterialsToLimit(ns, Divisions[0], city, ['Hardware', 'AI Cores', 'Real Estate'], [125, 75, 27e3]);
     }
 
     // Wait for Employee stats (100 Morale, 99.998 Happy/Energy)
@@ -461,7 +460,7 @@ async function timeToGrow(ns, waitForEmployees) {
 
     //Upgrade Storage to 2000 in all cities.
     //Buy mats: HW + 2675 = 2800, Robots 96, AI + 2445 = 2520, RE + 119400 = 146400.
-    let mats = ['Hardware', 'Robots', 'AI Cores', ' Real Estate'];
+    let mats = ['Hardware', 'Robots', 'AI Cores', 'Real Estate'];
     let limits = [2800, 96, 2520, 146400];
     for (let city of CITIES) {
         await upgradeWarehouseTo(ns, Divisions[0], city, 2000);
@@ -479,7 +478,7 @@ async function timeToGrow(ns, waitForEmployees) {
     }
     //Upgrade Storage to 3800 in all cities.
     //Buy mats: HW + 6500 = 9300, Robots + 630 = 726, AI + 3750 = 6270, RE + 84k = 230.4k.
-    mats = ['Hardware', 'Robots', 'AI Cores', ' Real Estate'];
+    mats = ['Hardware', 'Robots', 'AI Cores', 'Real Estate'];
     limits = [6500, 726, 6270, 230400];
     for (let city of CITIES) {
         await upgradeWarehouseTo(ns, Divisions[0], city, 3800);
