@@ -42,7 +42,8 @@ export async function main(ns) {
                 ns.tprint("INFO: algoStocksIV solver not finished.");
                 break;
             case "Array Jumping Game":
-                func = arrayJumping;
+                //func = arrayJumping;
+                ns.tprint("INFO: arrayJumping solver is broken.");
                 break;
             case "Find All Valid Math Expressions":
                 func = findValidMath;
