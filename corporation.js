@@ -384,9 +384,11 @@ async function initialSetup(ns, corpName) {
         CorpAPI.sellMaterial(Divisions[0], CITIES[c], "Plants", "MAX", "MP");
         CorpAPI.sellMaterial(Divisions[0], CITIES[c], "Food", "MAX", "MP");
 
+        /* Just kidding! This breaks things... somehow?
         // Totally cheat and turn on something we'll never bother researching.
         CorpAPI.setMaterialMarketTA2(Divisions[0], CITIES[c], "Plants", true);
         CorpAPI.setMaterialMarketTA2(Divisions[0], CITIES[c], "Food", true);
+        */
     }
 }
 
@@ -440,7 +442,7 @@ async function timeToGrow(ns, waitForEmployees) {
     if (CorpAPI.getInvestmentOffer().round == 1) {
         // Get 210b from an investor.
         while (CorpAPI.getInvestmentOffer().funds < 210e9) {
-            ns.print(`Waiting for a first investment opportunity (${ns.nFormat(CorpAPI.getInvestmentOffer().funds, "0.00a")}/210b).`);
+            ns.print(`Waiting for the first investment opportunity (${ns.nFormat(CorpAPI.getInvestmentOffer().funds, "0.00a")}/210b).`);
             await ns.sleep(10000);
         }
         CorpAPI.acceptInvestmentOffer();
@@ -468,7 +470,7 @@ async function timeToGrow(ns, waitForEmployees) {
     if (CorpAPI.getInvestmentOffer().round == 2) {
         // Get 5t from an investor.
         while (CorpAPI.getInvestmentOffer().funds < 5e12) {
-            ns.print(`Waiting for a first investment opportunity (${ns.nFormat(CorpAPI.getInvestmentOffer().funds, "0.00a")}/5t).`);
+            ns.print(`Waiting for the second investment opportunity (${ns.nFormat(CorpAPI.getInvestmentOffer().funds, "0.00a")}/5t).`);
             await ns.sleep(10000);
         }
         CorpAPI.acceptInvestmentOffer();
