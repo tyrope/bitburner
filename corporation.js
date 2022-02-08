@@ -594,17 +594,19 @@ export async function main(ns) {
             let offer = CorpAPI.getInvestmentOffer().funds;
             if (offer < 8e14) {
                 ns.print(`WARN: Offer too low (${ns.nFormat(offer, "0.00a")}/800t).`);
+            } else {
+                CorpAPI.acceptInvestmentOffer();
+                ns.print("SUCCESS: Accepted investor 3's offer of " + ns.nFormat(offer, "0.00a"));
             }
-            CorpAPI.acceptInvestmentOffer();
-            ns.print("SUCCESS: Accepted investor 3's offer of " + ns.nFormat(offer, "0.00a"));
         } else if (CorpAPI.getInvestmentOffer().round == 4) {
             ns.print(`--- INVESTOR 4. ---`);
             let offer = CorpAPI.getInvestmentOffer().funds;
             if (offer < 1e18) {
                 ns.print(`WARN: Offer too low (${ns.nFormat(offer, "0.00a")}/1Q).`);
+            } else {
+                CorpAPI.acceptInvestmentOffer();
+                ns.print("SUCCESS: Accepted investor 4's offer of " + ns.nFormat(offer, "0.00a"));
             }
-            CorpAPI.acceptInvestmentOffer();
-            ns.print("SUCCESS: Accepted investor 4's offer of " + ns.nFormat(offer, "0.00a"));
         }
 
         ns.print(`--- MAKING PRODUCTS. ---`);
