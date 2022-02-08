@@ -28,6 +28,7 @@ lib/netLib.js
 lib/tableMaker.js
 basicHack.js
 bigBrother.js
+corporation.js
 findFactions.js
 gradeServers.js
 growXP.js
