@@ -1,16 +1,17 @@
 // This script goes through *all* servers in the game and runs scriptName on them with max RAM.
-// Usage: run runAll.js [script] (args)
-// parameter script: The script to run on the target servers.
-// parameter args: Arguments to pass onto the script specified.
+// Usage run runAll.js [script] --flags
+// Parameter: script: The script to run on the target servers.
+// deny / exclude / x: Server to exclude.
+// arg / args: Argument to pass onto the script specified.
 
-import { getServers } from '/lib/netLib.js'
+import { getServers } from '/lib/netLib.js';
 
 let scriptName;
 let scriptArgs;
 let tools;
 
 export function autocomplete(data, args) {
-    return [...data.servers];
+    return [...data.servers, ...data.scripts];
 }
 
 /** 
@@ -64,11 +65,20 @@ function getRoot(ns, server) {
     return true;
 }
 
-/** @param {NS} ns **/
+/**
+ * @param {NS} ns
+ * @param {String} server
+ * @returns {Boolean}
+ **/
 async function control(ns, server) {
     if (getRoot(ns, server) == false) {
         // No root, no scripts.
-        return;
+        return false;
+    }
+
+    if (ns.getServerMaxRam(server) == 0) {
+        // Can't run scripts on this server.
+        return false;
     }
 
     // Kill the script if it's running.
@@ -81,36 +91,53 @@ async function control(ns, server) {
     let threads = Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / ns.getScriptRam(scriptName))
     // run the server grower, if we can.
     if (threads > 0) {
-        ns.exec(scriptName, server, threads, ...scriptArgs);
+        return ns.exec(scriptName, server, threads, ...scriptArgs) > 0;
     }
+    return false;
 }
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    if (ns.args[0] == undefined) {
-        ns.tprint("No script specified.");
-        ns.exit();
-    }
-    scriptName = ns.args[0];
+    const FLAGS = ns.flags([
+        ['script', ''],
+        ['x', []],
+        ['deny', []],
+        ['exclude', []],
+        ['arg', []],
+        ['args', []],
+    ]);
 
+    // Make sure it's a valid script.
+    scriptName = ns.args[0];
     if (ns.fileExists(scriptName, 'home') == false) {
         ns.tprint("Script not found.");
         ns.exit();
     }
 
-    if (ns.args.length > 1) {
-        scriptArgs = ns.args.slice(1);
-    } else {
-        scriptArgs = Array();
-    }
+    // Parse arguments.
+    scriptArgs = [...FLAGS['arg'], ...FLAGS['args']];
 
+    // Parse the denylist
+    let denylist = [...FLAGS['exclude'], ...FLAGS['x'], ...FLAGS['deny']];
+
+    // Grab the toolbox.
     tools = getTools(ns);
 
-    //TODO: Allow for blacklisting.
-    for (let server of getServers(ns)) {
-        ns.print(server);
-        await control(ns, server);
-    }
 
-    ns.tprint("Scan complete.");
+    let ran = 0;
+    let excl = 0;
+    // Loop through every server.
+    for (let server of getServers(ns)) {
+        // But not these.
+        if (denylist.includes(server)) {
+            excl++;
+        } else {
+            if (await control(ns, server)) {
+                ran++;
+            } else {
+                excl++;
+            }
+        }
+    }
+    ns.tprint(`Executed ${FLAGS['script']} on ${ran} servers (${excl} were left alone due to 0RAM or denylisting).`);
 }
