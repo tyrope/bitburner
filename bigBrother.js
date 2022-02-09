@@ -30,6 +30,6 @@ export async function main(ns) {
         }
         ns.print("\n" + makeTable(serverData));
         squishLines(ns.getScriptName() + " " + ns.args.join(" "));
-        await ns.sleep(1000);
+        await ns.sleep(1);
     }
 }
