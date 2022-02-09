@@ -605,8 +605,8 @@ export async function main(ns) {
             }
         }
 
-        ns.print(`--- MAKING PRODUCTS. ---`);
         // Determine proper investment.
+        ns.print(`--- MAKING PRODUCTS. ---`);
         let exp = Math.floor(Math.log10(CorpAPI.getCorporation().funds));
         if (CorpAPI.getCorporation().funds / 10 ** exp < 2) {
             exp--;
@@ -617,9 +617,11 @@ export async function main(ns) {
         // Create the product.
         createProduct(ns, Divisions[1], investment);
 
-        ns.print(`--- UPGRADING OFFICES. ---`);
         // Upgrade office sizes.
-        let maxSize; let numEmp; let numPerPos;
+        let maxSize;
+        let numEmp;
+        let numPerPos;
+        let hasPrintedHeader = false;
         for (let city of CITIES) {
             if (city == "Aevum") {
                 maxSize = 300;
@@ -637,15 +639,27 @@ export async function main(ns) {
                     }
                 }
                 numEmp = Math.min(numEmp, maxSize);
+                if (!hasPrintedHeader) {
+                    hasPrintedHeader = true;
+                    ns.print(`--- UPGRADING OFFICES. ---`);
+                }
                 ns.print(`Upgrading ${city} from ${startSize} to ${numEmp} (max: ${maxSize})`);
                 numPerPos = numEmp / 5;
                 await increaseOfficeTo(ns, Divisions[1], city, [numPerPos, numPerPos, numPerPos, numPerPos, numPerPos, 0]);
             }
         }
 
-        ns.print(`--- BUYING UPGRADES. ---`);
         // Buy upgrades.
+        ns.print(`--- BUYING UPGRADES. ---`);
         for (let upg in LEVEL_UPGRADES) {
+            if (upg == "Wilson Analytics") {
+                // Special case, this one we stop when we're max awareness/popularity.
+                if (CorpAPI.getDivision(Divisions[1]).awareness > 1e308 ||
+                    CorpAPI.getDivision(Divisions[1]).popularity > 1e308) {
+                    continue;
+                }
+            }
+
             let maxlevel;
             if (CorpAPI.getOffice(Divisions[1], "Aevum").size == 300) {
                 maxlevel = LEVEL_UPGRADES[upg];
@@ -658,23 +672,30 @@ export async function main(ns) {
         }
 
         //Buy AdVerts
-        ns.print(`--- BUYING ADVERTS. ---`);
-        let adverts = 0;
-        while (CorpAPI.getHireAdVertCost(Divisions[1]) < CorpAPI.getCorporation().funds) {
-            CorpAPI.hireAdVert(Divisions[1]);
-            adverts++;
+        if (
+            CorpAPI.getDivision(Divisions[1]).awareness < Number.MAX_VALUE ||
+            CorpAPI.getDivision(Divisions[1]).popularity < Number.MAX_VALUE
+        ) {
+            ns.print(`--- BUYING ADVERTS. ---`);
+
+            let adverts = 0;
+            while (CorpAPI.getHireAdVertCost(Divisions[1]) < CorpAPI.getCorporation().funds) {
+                CorpAPI.hireAdVert(Divisions[1]);
+                adverts++;
+            }
+
+            if (adverts == 0) {
+                ns.print(`WARN: Couldn't afford adverts.`);
+            } else {
+                ns.print(`SUCCESS: bought ${adverts} adverts.`);
+            }
         }
-        if (adverts == 0) {
-            ns.print(`WARN: Couldn't afford adverts.`);
-        } else {
-            ns.print(`SUCCESS: bought ${adverts} adverts.`);
-        }
+
+        // Wait for next cycle.
         let delayEnd = new Date(Date.now() + 10000);
         let h = delayEnd.getHours();
         let m = delayEnd.getMinutes() < 10 ? "0" + delayEnd.getMinutes() : delayEnd.getMinutes();
         let s = delayEnd.getSeconds() < 10 ? "0" + delayEnd.getSeconds() : delayEnd.getSeconds();
-
-        // Wait for next cycle.
         ns.print(`--- WAITING UNTIL ${h}:${m}:${s}. ---`);
         await ns.sleep(10000);
     }
