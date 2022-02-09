@@ -611,10 +611,10 @@ export async function main(ns) {
         ns.print(`--- MAKING PRODUCTS. ---`);
         // Determine proper investment.
         let exp = Math.floor(Math.log10(CorpAPI.getCorporation().funds));
-        if (CorpAPI.getCorporation().funds / 10 ** exp < 2 < 2) {
+        if (CorpAPI.getCorporation().funds / 10 ** exp < 2) {
             exp--;
         }
-        let base = Math.floor(CorpAPI.getCorporation().funds / 10 ** exp < 2) / 2;
+        let base = Math.floor(CorpAPI.getCorporation().funds / 10 ** exp) / 2;
         let investment = base * 10 ** exp;
 
         // Create the product.
