@@ -653,7 +653,7 @@ export async function main(ns) {
             if (CorpAPI.getOffice(Divisions[1], "Aevum").size == 300) {
                 maxlevel = LEVEL_UPGRADES[upg];
             } else {
-                Math.min(CorpAPI.getOffice(Divisions[1], "Aevum").size, LEVEL_UPGRADES[upg]);
+                maxlevel = Math.min(CorpAPI.getOffice(Divisions[1], "Aevum").size, LEVEL_UPGRADES[upg]);
             }
             if (CorpAPI.getUpgradeLevel(upg) < maxlevel) {
                 buyUpgradeLevel(ns, upg, maxlevel, true);
