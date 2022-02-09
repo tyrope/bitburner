@@ -1,3 +1,5 @@
+import { numFormat } from '/lib/format.js'
+
 // Cities in which you can have Offices/warehouses.
 const CITIES = ['Aevum', 'Chongqing', 'Sector-12', 'New Tokyo', 'Ishima', 'Volhaven'];
 // The positions you can put employees in.
@@ -306,7 +308,7 @@ function createProduct(ns, division, investment) {
             CorpAPI.makeProduct(division, 'Aevum', PRODUCT_NAMES[i], investment, investment);
             CorpAPI.sellProduct(division, 'Aevum', PRODUCT_NAMES[i], "MAX", "MP", true);
             CorpAPI.setProductMarketTA2(division, PRODUCT_NAMES[i], true);
-            return ns.print(`SUCCESS: ${division} is creating ${PRODUCT_NAMES[i]} with a $${ns.nFormat(2 * investment, "0.0a")} budget.`);
+            return ns.print(`SUCCESS: ${division} is creating ${PRODUCT_NAMES[i]} with a $${numFormat(investment * 2)} budget.`);
         }
     }
     if (latestProductIndex == 4) {
@@ -320,7 +322,8 @@ function createProduct(ns, division, investment) {
     CorpAPI.makeProduct(division, 'Aevum', PRODUCT_NAMES[latestProductIndex], investment, investment);
     CorpAPI.sellProduct(division, 'Aevum', PRODUCT_NAMES[latestProductIndex], "MAX", "MP", true);
     CorpAPI.setProductMarketTA2(division, PRODUCT_NAMES[latestProductIndex], true);
-    return ns.print(`SUCCESS: ${division} is re-creating ${PRODUCT_NAMES[latestProductIndex]} with a $${ns.nFormat(2 * investment, "0.0a")} budget.`);
+    ns.print(investment);
+    return ns.print(`SUCCESS: ${division} is re-creating ${PRODUCT_NAMES[latestProductIndex]} with a $${numFormat(investment * 2)} budget.`);
 }
 
 /** Cycle the latestProductIndex to whichever value is to be created next.
@@ -382,12 +385,6 @@ async function initialSetup(ns, corpName) {
         // Start selling.
         CorpAPI.sellMaterial(Divisions[0], CITIES[c], "Plants", "MAX", "MP");
         CorpAPI.sellMaterial(Divisions[0], CITIES[c], "Food", "MAX", "MP");
-
-        /* Just kidding! This breaks things... somehow?
-        // Totally cheat and turn on something we'll never bother researching.
-        CorpAPI.setMaterialMarketTA2(Divisions[0], CITIES[c], "Plants", true);
-        CorpAPI.setMaterialMarketTA2(Divisions[0], CITIES[c], "Food", true);
-        */
     }
 }
 
@@ -435,7 +432,7 @@ async function timeToGrow(ns, waitForEmployees) {
         if (morale >= 100 && happiness >= 99.998 && energy >= 99.998) {
             break;
         }
-        ns.print(`Waiting for employees to get their shit together (mor: ${ns.nFormat(morale, "0.000")}, hap: ${ns.nFormat(happiness, "0.000")}, ene: ${ns.nFormat(energy, "0.000")}).`);
+        ns.print(`Waiting for employees to get their shit together (mor: ${ns.nFormat(morale, "0.0[00]")}, hap: ${ns.nFormat(happiness, "0.0[00]")}, ene: ${ns.nFormat(energy, "0.0[00]")}).`);
         await ns.sleep(10000);
     }
     if (CorpAPI.getInvestmentOffer().round == 1) {
