@@ -53,26 +53,26 @@ async function getUnlockUpgrade(ns, upgradeName, tryOnce = false) {
  * @param {NS} ns
  * @param {String} upgradeName name of the upgrade to unlock
  * @param {Number?} maximum level to upgrade to. (Default: 1)
- * @param {Boolean?} buyOnce if true, won't wait for more money to upgrade. (also won't need awaiting).
+ * @param {Boolean?} buyNow if true, won't wait for more money to upgrade. (also won't need awaiting).
  */
-async function buyUpgradeLevel(ns, upgradeName, maxLevel = 1, buyOnce = false) {
+async function buyUpgradeLevel(ns, upgradeName, maxLevel = 1, buyNow = false) {
     const CorpAPI = eval("ns.corporation");
+    const oldLevel = CorpAPI.getUpgradeLevel(upgradeName);
     if (CorpAPI.getUpgradeLevel(upgradeName) >= maxLevel) {
         return ns.print(`INFO: Trying to upgrade ${upgradeName} to ${maxLevel} but we're already level ${CorpAPI.getUpgradeLevel(upgradeName)}`);
     }
     while (CorpAPI.getUpgradeLevel(upgradeName) < maxLevel) {
-        while (CorpAPI.getUpgradeLevelCost(upgradeName) > CorpAPI.getCorporation().funds) {
-            if (buyOnce) {
-                return; //ns.print(`WARN: Couldn't afford ${upgradeName} lvl ${CorpAPI.getUpgradeLevel(upgradeName) + 1}`);
-            }
+        if (CorpAPI.getUpgradeLevelCost(upgradeName) <= CorpAPI.getCorporation().funds) {
+            CorpAPI.levelUpgrade(upgradeName);
+        } else if (buyNow) {
+            break;
+        } else {
             await ns.sleep(10000);
         }
-        CorpAPI.levelUpgrade(upgradeName);
-        if (buyOnce) {
-            return ns.print(`SUCCESS: Upgraded ${upgradeName} to ${CorpAPI.getUpgradeLevel(upgradeName)}.`);
-        }
     }
-    return ns.print(`SUCCESS: Upgraded ${upgradeName} to ${CorpAPI.getUpgradeLevel(upgradeName)}.`);
+    if (CorpAPI.getUpgradeLevel(upgradeName) != oldLevel) {
+        return ns.print(`SUCCESS: Upgraded ${upgradeName} to ${CorpAPI.getUpgradeLevel(upgradeName)}.`);
+    }
 }
 
 /** Form a division in a new industry.
