@@ -10,6 +10,13 @@ let scriptName;
 let scriptArgs;
 let tools;
 
+const CONTROL_STATUS = {
+    FAILURE: -1,
+    SUCCESS: 0,
+    NORAM: 1,
+    NOROOT: 2
+}
+
 export function autocomplete(data, args) {
     return [...data.servers, ...data.scripts];
 }
@@ -68,17 +75,17 @@ function getRoot(ns, server) {
 /**
  * @param {NS} ns
  * @param {String} server
- * @returns {Boolean}
+ * @returns {ControlStatus}
  **/
 async function control(ns, server) {
     if (getRoot(ns, server) == false) {
         // No root, no scripts.
-        return false;
+        return CONTROL_STATUS.NOROOT;
     }
 
     if (ns.getServerMaxRam(server) == 0) {
         // Can't run scripts on this server.
-        return false;
+        return CONTROL_STATUS.NORAM;
     }
 
     // Kill the script if it's running.
@@ -91,16 +98,19 @@ async function control(ns, server) {
     let threads = Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / ns.getScriptRam(scriptName))
     // run the server grower, if we can.
     if (threads > 0) {
-        return ns.exec(scriptName, server, threads, ...scriptArgs) > 0;
+        if (ns.exec(scriptName, server, threads, ...scriptArgs) > 0) {
+            return CONTROL_STATUS.SUCCESS;
+        } else {
+            return CONTROL_STATUS.FAILURE;
+        }
     }
-    return false;
+    return CONTROL_STATUS.NORAM;
 }
 
 /** @param {NS} ns **/
 export async function main(ns) {
     const FLAGS = ns.flags([
         ['script', ''],
-        ['x', []],
         ['deny', []],
         ['exclude', []],
         ['arg', []],
@@ -118,26 +128,53 @@ export async function main(ns) {
     scriptArgs = [...FLAGS['arg'], ...FLAGS['args']];
 
     // Parse the denylist
-    let denylist = [...FLAGS['exclude'], ...FLAGS['x'], ...FLAGS['deny']];
+    let denylist = [...FLAGS['exclude'], ...FLAGS['deny']];
 
     // Grab the toolbox.
     tools = getTools(ns);
 
 
-    let ran = 0;
-    let excl = 0;
+    let success = 0;
+    let noRam = 0;
+    let denied = 0;
+    let noRoot = 0;
+    let fail = 0;
     // Loop through every server.
     for (let server of getServers(ns)) {
         // But not these.
         if (denylist.includes(server)) {
-            excl++;
+            denied++;
         } else {
-            if (await control(ns, server)) {
-                ran++;
-            } else {
-                excl++;
+            // Try to run the script and see what happens.
+            switch (await control(ns, server)) {
+                case CONTROL_STATUS.NOROOT:
+                    noRoot++;
+                    break;
+                case CONTROL_STATUS.NORAM:
+                    noRam++;
+                    break;
+                case CONTROL_STATUS.SUCCESS:
+                    success++;
+                    break;
+                case CONTROL_STATUS.FAILURE:
+                    fail++;
+                    break;
+                // end switch.
             }
         }
     }
-    ns.tprint(`Executed ${FLAGS['script']} on ${ran} servers (${excl} were left alone due to 0RAM or denylisting).`);
+    let ret = `Executed ${scriptName} ${scriptArgs.join(' ')} on ${success} server(s).`;
+    if (denied > 0) {
+        ret += `\n - ${denied} server(s) were denylisted.`;
+    }
+    if (noRoot > 0) {
+        ret += `\n - ${noRoot} server(s) aren't rooted.`
+    }
+    if (noRam > 0) {
+        ret += `\n - ${noRam} server(s) don't have enough RAM.`
+    }
+    if (fail > 0) {
+        ret += `\n - ${fail} server(s) failed to execute the script.`
+    }
+    ns.tprint(ret);
 }
