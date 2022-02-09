@@ -23,7 +23,7 @@ let scriptStart;
  */
 function calcHack(ns, tgt, moneyPct, hasFormulas) {
     // Calculate the hack.
-    let maxMoney = ns.getServerMaxMoney(tgt);
+    const maxMoney = ns.getServer(tgt).moneyMax;
     while (moneyPct > 1) { moneyPct /= 100; }
     let threads;
     let timeToHack;
@@ -61,7 +61,7 @@ function calcHack(ns, tgt, moneyPct, hasFormulas) {
  * @return {Number[]}           The amount of threads, grow duration, security increase.
  */
 function calcGrow(ns, tgt, money, hasFormulas) {
-    let max = ns.getServerMaxMoney(tgt);
+    let max = ns.getServer(tgt).moneyMax;
     let regrow = max / (max - Math.max(money, 1));
     let threads;
     let timeToGrow;
@@ -139,7 +139,8 @@ function calcBatches(ns, delay, runTimes, threads, src) {
         ns.getScriptRam('/batch/grow.js', src) * threads[2] +
         ns.getScriptRam('/batch/weaken.js', src) * (threads[1] + threads[3]);
     // This will break if multiple batchers are running.
-    let maxBatches = (ns.getServerMaxRam(src) - ns.getServerUsedRam(src)) / ramUse;
+    const serv_src = ns.getServer(src);
+    let maxBatches = (serv_src.maxRam - serv_src.ramUsed) / ramUse;
 
     // Get the start times.
     let execs = Array();
@@ -167,8 +168,9 @@ function calcBatches(ns, delay, runTimes, threads, src) {
 async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, affectStocks) {
     const currLvl = ns.getHackingLevel;
     const startLvl = currLvl();
-    const now = ns.getTimeSinceLastAug;
+    const now = Date.now;
     const batchStart = now();
+    const srv_src = ns.getServer(src);
 
     ns.print(`INFO: Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, now() + firstLand - scriptStart)}\nTotal yield ${ns.nFormat(profit, "$0.00a")} over ${execs.length} scripts`);
 
@@ -213,12 +215,11 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, af
         await ns.sleep(x[0] - slept);
         slept = x[0];
 
-        // Ensure we're not bumping into RAM limitations
-        if (ns.getServerMaxRam(src) - ns.getServerUsedRam(src) < ns.getScriptRam(script, src)) {
-            ns.print(`ERROR: [T+${timeFormat(ns, now() - scriptStart, false)}]Aborting, out of RAM.`);
+        // Ensure we're not bumping into RAM limitations or other shenanigans
+        if (ns.exec(script, src, t, tgt, profit, affectStocks.includes(x[1]), now()) < 1) {
+            ns.print(`ERROR: [T+${timeFormat(ns, now() - scriptStart, false)}]Aborting, script launch failed.`);
             return true;
         }
-        ns.exec(script, src, t, tgt, profit, affectStocks.includes(x[1]), now());
     }
     return false;
 }
@@ -242,7 +243,7 @@ function calcThreads(ns, tgt, pct, hasFormulas) {
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    scriptStart = ns.getTimeSinceLastAug();
+    scriptStart = Date.now();
     ns.clearLog();
     ns.disableLog('ALL');
     //Parameter parsing.
@@ -253,19 +254,19 @@ export async function main(ns) {
     }
 
     const tgt = ns.args[0];
-    const src = ns.args[1] ? ns.args[1] : ns.getHostname();
+    const src = ns.args[1] ? ns.args[1] : ns.getServer().hostname;
     const pct = ns.args[2] ? ns.args[2] : 0.2;
     const affectStocks = ns.args[3] ? ns.args[3] : "";
     const sim = ns.args[4];
 
     // Constants.
     const delay = 100;
+    const srv = ns.getServer(tgt);
+
+    // Ensure there's Formulas
     const hasFormulas = ns.fileExists('Formulas.EXE', 'home');
     if (!hasFormulas) {
-        if (
-            ns.getServerMaxMoney(tgt) != ns.getServerMoneyAvailable(tgt) ||
-            ns.getServerMinSecurityLevel(tgt) != ns.getServerSecurityLevel(tgt)
-        ) {
+        if (srv.moneyMax != srv.moneyAvailable || srv.minDifficulty != srv.hackDifficulty) {
             ns.tprint("ERROR: Targeting a non-prepped server without formulas.");
             ns.exit();
         }
@@ -288,8 +289,7 @@ export async function main(ns) {
         ns.exit();
     }
 
-    if (ns.getServerMaxMoney(tgt) != ns.getServerMoneyAvailable(tgt) ||
-        ns.getServerMinSecurityLevel(tgt) != ns.getServerSecurityLevel(tgt)) {
+    if (srv.moneyMax != srv.moneyAvailable || srv.minDifficulty != srv.hackDifficulty) {
         ns.tprint(`ERROR: Server ${tgt} not prepared.`);
         ns.exit();
     }
@@ -310,7 +310,8 @@ export async function main(ns) {
     let recalc = false;
     while (true) {
         if (recalc) {
-            if (ns.getHostname() == src) {
+
+            if (ns.getServer().hostname == src) {
                 ns.tprint(`FAIL: [${src}]Recalc is telling us to killall, but we're hacking from the dispatcher.`);
             }
             ns.killall(src);
@@ -334,7 +335,7 @@ export async function main(ns) {
 export function getBatchInfo(ns, tgt, percent) {
     const hasFormulas = ns.fileExists('Formulas.EXE', 'home');
     let profit = calcHack(ns, tgt, percent, hasFormulas)[3];
-    percent = profit / ns.getServerMaxMoney(tgt);
+    percent = profit / ns.getServer(tgt).moneyMax;
     let threads = calcThreads(ns, tgt, percent, hasFormulas)[0];
     let time = calcWeaken(ns, tgt, calcGrow(ns, tgt, profit, hasFormulas)[2], hasFormulas)[1] + 200;
     return ([
