@@ -6,7 +6,7 @@
 // Parameter affectStocks: "H","G", or "GH", to let grows and/or hacks affect stocks. (Default: "")
 // Parameter simulate: If true, don't run scripts; print the expected results instead. (Default: false)
 
-import { timeFormat } from '/lib/format.js';
+import { timeFormat, numFormat } from '/lib/format.js';
 
 export function autocomplete(data, args) {
     return [...data.servers];
@@ -135,9 +135,8 @@ function calcBatches(ns, delay, runTimes, threads, src) {
     const firstHackLand = delays[0] + runTimes[0];
     // we can run this many batches before RAM runs out.
     let ramUse =
-        ns.getScriptRam('/batch/hack.js', src) * threads[0] +
-        ns.getScriptRam('/batch/grow.js', src) * threads[2] +
-        ns.getScriptRam('/batch/weaken.js', src) * (threads[1] + threads[3]);
+        threads[0] * 1.7 + // hack.
+        (threads[1] + threads[2] + threads[3]) * 1.75; // grow and weaken
     // This will break if multiple batchers are running.
     const serv_src = ns.getServer(src);
     let maxBatches = (serv_src.maxRam - serv_src.ramUsed) / ramUse;
@@ -170,12 +169,18 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, af
     const startLvl = currLvl();
     const now = Date.now;
     const batchStart = now();
-    const srv_src = ns.getServer(src);
 
-    ns.print(`INFO: Launching attack: ${src} -> ${tgt}.\nFirst hack will land at T+${timeFormat(ns, now() + firstLand - scriptStart)}\nTotal yield ${ns.nFormat(profit, "$0.00a")} over ${execs.length} scripts`);
+    ns.print(
+        `INFO: Launching attack: ${src} -> ${tgt}.\n` +
+        `First hack will land at T+${timeFormat(ns, now() + firstLand - scriptStart)}\n` +
+        `Total yield \$${numFormat(profit * (execs.length / 4), "game")} over ${execs.length} scripts.`
+    );
 
-    let script = ""; let t; let slept = 0;
-    for (let x of execs) {
+    let script = "";
+    let t;
+    let slept = 0;
+    let ram;
+    for (const x of execs) {
         if (currLvl() != startLvl) {
             ns.print(`WARNING: [T+${timeFormat(ns, now() - scriptStart, false)}]Hack level increased, aborting hack.`);
             return true;
@@ -193,18 +198,22 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, af
             case "H":
                 script = "/batch/hack.js";
                 t = threads[0];
+                ram = 1.7 * t;
                 break;
             case "G":
                 script = "/batch/grow.js";
                 t = threads[2];
+                ram = 1.75 * t;
                 break;
             case "Wh":
                 script = "/batch/weaken.js";
                 t = threads[1];
+                ram = 1.75 * t;
                 break;
             case "Wg":
                 script = "/batch/weaken.js";
                 t = threads[3];
+                ram = 1.75 * t;
                 break;
         }
 
@@ -216,6 +225,11 @@ async function startBatching(ns, tgt, src, threads, execs, firstLand, profit, af
         slept = x[0];
 
         // Ensure we're not bumping into RAM limitations or other shenanigans
+        const serv_src = ns.getServer(src);
+        if (ram > serv_src.maxRam - serv_src.ramUsed) {
+            ns.print(`ERROR: [T+${timeFormat(ns, now() - scriptStart, false)}]Aborting, out of RAM.`);
+            return true;
+        }
         if (ns.exec(script, src, t, tgt, profit, affectStocks.includes(x[1]), now()) < 1) {
             ns.print(`ERROR: [T+${timeFormat(ns, now() - scriptStart, false)}]Aborting, script launch failed.`);
             return true;
@@ -280,11 +294,10 @@ export async function main(ns) {
     // If we're only simulating, we just got enough info.
     if (sim) {
         let ram =
-            ns.getScriptRam('/batch/hack.js') * threads[0] +
-            ns.getScriptRam('/batch/grow.js') * threads[2] +
-            ns.getScriptRam('/batch/weaken.js') * (threads[1] + threads[3]);
+            threads[0] * 1.7 + // hack.
+            (threads[1] + threads[2] + threads[3]) * 1.75; // grow and weaken
         let time = runTimes[3] + delay * 2;
-        ns.tprint(`${src} -> ${tgt}, stealing \$${ns.nFormat(profit, "0.000a")} in ${ns.tFormat(time)} using ${ns.nFormat(ram * 1e9, "0.00b")} RAM`);
+        ns.tprint(`${src} -> ${tgt}, stealing \$${numFormat(profit, "game")} in ${ns.tFormat(time)} using ${ns.nFormat(ram * 1e9, "0.00b")} RAM`);
         ns.tprint(`Threads: hack(${threads[0]}), weaken(${threads[1]}), grow(${threads[2]}), weaken(${threads[3]});`);
         ns.exit();
     }
@@ -298,7 +311,7 @@ export async function main(ns) {
     if (src != 'home') {
         for (let file of ['/batch/hack.js', '/batch/grow.js', '/batch/weaken.js']) {
             ns.print(`uploading ${file}`);
-            await ns.scp(file, 'home', src);
+            await ns.scp(file, src, 'home');
         }
     }
 
@@ -310,6 +323,8 @@ export async function main(ns) {
     let recalc = false;
     while (true) {
         if (recalc) {
+            // If a batch fails, make sure we let it fully run out.
+            await ns.sleep(runTimes[1] + delay * 2);
 
             if (ns.getServer().hostname == src) {
                 ns.tprint(`FAIL: [${src}]Recalc is telling us to killall, but we're hacking from the dispatcher.`);
@@ -321,8 +336,14 @@ export async function main(ns) {
         let execs = calcBatches(ns, delay, runTimes, threads, src);
         let time = execs.filter(x => x[1] == "H")[0][0];
         recalc = await startBatching(ns, tgt, src, threads, execs, time + runTimes[0], profit, affectStocks);
-        // If a batch fails, make sure we let it fully run out.
-        await ns.sleep(runTimes[1] + delay * 2);
+
+
+        let srv_tgt = ns.getServer(tgt);
+        if (srv_tgt.moneyAvailable != srv_tgt.moneyMax ||
+            srv_tgt.hackDifficulty != srv_tgt.minDifficulty) {
+            ns.tprint(`ERROR: ${tgt} lost prep while under attack from ${src}.`);
+            ns.exit();
+        }
     }
 }
 
@@ -339,9 +360,7 @@ export function getBatchInfo(ns, tgt, percent) {
     let threads = calcThreads(ns, tgt, percent, hasFormulas)[0];
     let time = calcWeaken(ns, tgt, calcGrow(ns, tgt, profit, hasFormulas)[2], hasFormulas)[1] + 200;
     return ([
-        ns.getScriptRam('/batch/hack.js', "home") * threads[0] +
-        ns.getScriptRam('/batch/grow.js', "home") * threads[2] +
-        ns.getScriptRam('/batch/weaken.js', "home") * (threads[1] + threads[3]),
+        threads[0] * 1.7 /* hack */ + (threads[1] + threads[2] + threads[3]) * 1.75, // grow and weaken
         time,
         profit
     ]);
