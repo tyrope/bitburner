@@ -48,7 +48,7 @@ function sellStocks(ns) {
             ns.stock.getSaleGain(sym.name, sym.owned, "L")) { // the money we'll get if we sell now.
             // Try to sell when we have a 10% or higher profit.
             let transaction = ns.stock.getSaleGain(sym.name, sym.owned, "L");
-            if (ns.stock.sell(sym.name, sym.owned) == 0) {
+            if (ns.stock.sellStock(sym.name, sym.owned) == 0) {
                 continue;
             }
             earnedMoney += transaction;
@@ -84,7 +84,7 @@ function buyStocks(ns) {
                 continue;
             }
             let transaction = ns.stock.getPurchaseCost(sym.name, shares, "L");
-            if (ns.stock.buy(sym.name, shares) == 0) {
+            if (ns.stock.buyStock(sym.name, shares) == 0) {
                 continue;
             }
             spentMoney += transaction;
