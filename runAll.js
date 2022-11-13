@@ -93,7 +93,7 @@ async function control(ns, server) {
         ns.scriptKill(scriptName, server);
     }
 
-    await ns.scp(scriptName, "home", server);
+    await ns.scp(scriptName, server, "home");
     // Calculate how many threads of the server grower we can run.
     let threads = Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / ns.getScriptRam(scriptName))
     // run the server grower, if we can.
